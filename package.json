@@ -99,7 +99,7 @@
 		"npmlog": "^4.1.2"
 	},
 	"devDependencies": {
-		"ava": "^2.4.0",
+		"ava": "^3.1.0",
 		"cross-env": "^6.0.3",
 		"docdash": "^1.2.0",
 		"eslint": "^5.16.0",
