@@ -100,7 +100,7 @@
 		"npmlog": "^4.1.2"
 	},
 	"devDependencies": {
-		"ava": "^2.4.0",
+		"ava": "^3.6.0",
 		"chokidar-cli": "^2.1.0",
 		"cross-env": "^7.0.2",
 		"docdash": "^1.2.0",
