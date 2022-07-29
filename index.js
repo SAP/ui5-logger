@@ -1,5 +1,2 @@
-/**
- * @module @ui5/logger
- * @private
- */
-module.exports = require("./lib/logger");
+import logger from "./lib/logger.js";
+export default logger;
