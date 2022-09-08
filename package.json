@@ -26,14 +26,14 @@
 		"test": "npm run lint && npm run jsdoc-generate && npm run coverage && npm run depcheck",
 		"test-azure": "npm run coverage-xunit",
 		"lint": "eslint ./",
-		"unit": "rimraf test/tmp && cross-env NODE_NO_WARNINGS=1 ava --node-arguments=\"--loader=esmock\"",
-		"unit-verbose": "rimraf test/tmp && cross-env UI5_LOG_LVL=verbose NODE_NO_WARNINGS=1 ava --node-arguments=\"--loader=esmock\" --verbose --serial",
-		"unit-watch": "rimraf test/tmp && cross-env NODE_NO_WARNINGS=1 ava --node-arguments=\"--loader=esmock\" --watch",
-		"unit-nyan": "rimraf test/tmp && cross-env NODE_NO_WARNINGS=1 ava --node-arguments=\"--loader=esmock\" --tap | tnyan",
-		"unit-xunit": "rimraf test/tmp && cross-env NODE_NO_WARNINGS=1 ava --node-arguments=\"--loader=esmock\" --tap | tap-xunit --dontUseCommentsAsTestNames=true > test-results.xml",
-		"unit-inspect": "cross-env UI5_LOG_LVL=verbose NODE_NO_WARNINGS=1 ava --node-arguments=\"--loader=esmock\" debug --break",
-		"coverage": "c8 npm run unit",
-		"coverage-xunit": "c8 --reporter=text --reporter=text-summary --reporter=cobertura npm run unit-xunit",
+		"unit": "rimraf test/tmp && ava --node-arguments=\"--loader=esmock\"",
+		"unit-verbose": "rimraf test/tmp && cross-env UI5_LOG_LVL=verbose ava --node-arguments=\"--loader=esmock\" --verbose --serial",
+		"unit-watch": "npm run unit -- --watch",
+		"unit-nyan": "npm run unit -- --tap | tnyan",
+		"unit-xunit": "rimraf test/tmp && ava --node-arguments=\"--experimental-loader=@istanbuljs/esm-loader-hook --loader=esmock\" --tap | tap-xunit --dontUseCommentsAsTestNames=true > test-results.xml",
+		"unit-inspect": "cross-env UI5_LOG_LVL=verbose ava --node-arguments=\"--loader=esmock\" debug --break",
+		"coverage": "nyc ava --node-arguments=\"--experimental-loader=@istanbuljs/esm-loader-hook --loader=esmock\"",
+		"coverage-xunit": "nyc --reporter=text --reporter=text-summary --reporter=cobertura npm run unit-xunit",
 		"jsdoc": "npm run jsdoc-generate && open-cli jsdocs/index.html",
 		"jsdoc-generate": "jsdoc -c ./jsdoc.json -t $(node -p 'path.dirname(require.resolve(\"docdash\"))') ./lib/ || (echo 'Error during JSDoc generation! Check log.' && exit 1)",
 		"jsdoc-watch": "npm run jsdoc && chokidar \"./lib/**/*.js\" -c \"npm run jsdoc-generate\"",
@@ -41,7 +41,7 @@
 		"version": "git-chglog --sort semver --next-tag v$npm_package_version -o CHANGELOG.md && git add CHANGELOG.md",
 		"postversion": "git push --follow-tags",
 		"release-note": "git-chglog --sort semver -c .chglog/release-config.yml v$npm_package_version",
-		"depcheck": "depcheck --ignores docdash"
+		"depcheck": "depcheck --ignores docdash,@istanbuljs/esm-loader-hook"
 	},
 	"files": [
 		"index.js",
@@ -57,7 +57,7 @@
 			"test/lib/**/*.js"
 		]
 	},
-	"c8": {
+	"nyc": {
 		"reporter": [
 			"lcov",
 			"text",
@@ -94,6 +94,7 @@
 				90
 			]
 		},
+		"cache": true,
 		"all": true
 	},
 	"repository": {
@@ -104,8 +105,8 @@
 		"npmlog": "^6.0.2"
 	},
 	"devDependencies": {
+		"@istanbuljs/esm-loader-hook": "^0.2.0",
 		"ava": "^4.3.1",
-		"c8": "^7.12.0",
 		"chokidar-cli": "^3.0.0",
 		"cross-env": "^7.0.3",
 		"depcheck": "^1.4.3",
@@ -116,6 +117,7 @@
 		"eslint-plugin-jsdoc": "^37.6.3",
 		"esmock": "^1.8.9",
 		"jsdoc": "^3.6.7",
+		"nyc": "^15.1.0",
 		"open-cli": "^6.0.1",
 		"rimraf": "^3.0.2",
 		"sinon": "^14.0.0",
