@@ -23,7 +23,10 @@ test.beforeEach(async (t) => {
 		enableProgress: sinon.stub(),
 		disableProgress: sinon.stub(),
 		enableUnicode: sinon.stub(),
-		on: sinon.stub(),
+		on: sinon.stub().onFirstCall().callsFake((name, fn) => {
+			t.context.npmLogOnEventName = name;
+			t.context.npmLogOnEventFn = fn;
+		}),
 		newGroup: sinon.stub().callsFake(() => getNpmLogStub()),
 		newItem: sinon.stub().callsFake(() => getNpmLogStub()),
 		addLevel: sinon.stub(),
@@ -34,6 +37,8 @@ test.beforeEach(async (t) => {
 		warn: sinon.stub(),
 		error: sinon.stub()
 	};
+
+	t.context.consoleLog = sinon.stub(console, "log");
 
 	t.context.logger = await esmock("../../lib/logger", {
 		npmlog: t.context.npmLogStub
@@ -312,4 +317,16 @@ test.serial("TaskLogger#finish", (t) => {
 	myLogger.finish();
 
 	t.true(_logger.finish.calledOnce, "finished should call npmlog.finish");
+});
+
+test.serial("npmlog errors are send to console", (t) => {
+	const {npmLogOnEventName, npmLogOnEventFn, consoleLog} = t.context;
+
+	t.is(consoleLog.callCount, 0);
+	t.is(npmLogOnEventName, "error", "npmlog.on should be called with event name 'error'");
+
+	npmLogOnEventFn("some message");
+
+	t.is(consoleLog.callCount, 1);
+	t.deepEqual(consoleLog.getCall(0).args, ["some message"]);
 });
