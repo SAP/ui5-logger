@@ -17,10 +17,7 @@
 		"tool"
 	],
 	"type": "module",
-	"exports": {
-		".": "./lib/logger.js",
-		"./package.json": "./package.json"
-	},
+	"exports": "./index.js",
 	"engines": {
 		"node": ">= 16.13.2",
 		"npm": ">= 8"
@@ -47,6 +44,7 @@
 		"depcheck": "depcheck --ignores docdash,@istanbuljs/esm-loader-hook"
 	},
 	"files": [
+		"index.js",
 		"CHANGELOG.md",
 		"CONTRIBUTING.md",
 		"jsdoc.json",

@@ -3,11 +3,13 @@
 		"allowUnknownTags": false
 	},
 	"source": {
-		"include": ["README.md"],
+		"include": ["README.md", "index.js"],
 		"includePattern": ".+\\.js$",
 		"excludePattern": "(node_modules(\\\\|/))"
 	},
-	"plugins": [],
+	"plugins": [
+		"./jsdoc-plugin.cjs"
+	],
 	"opts": {
 		"encoding": "utf8",
 		"destination": "jsdocs/",
