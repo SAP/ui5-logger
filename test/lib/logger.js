@@ -43,6 +43,9 @@ test.beforeEach(async (t) => {
 	t.context.logger = await esmock("../../lib/logger", {
 		npmlog: t.context.npmLogStub
 	});
+	t.context.Logger = t.context.logger.getLogger.__test__.Logger;
+	t.context.GroupLogger = t.context.logger.getLogger.__test__.GroupLogger;
+	t.context.TaskLogger = t.context.logger.getLogger.__test__.TaskLogger;
 });
 
 test.afterEach.always((t) => {
@@ -51,16 +54,14 @@ test.afterEach.always((t) => {
 });
 
 test.serial("getLogger", (t) => {
-	const {logger} = t.context;
-	const {Logger} = logger.__test__;
+	const {logger, Logger} = t.context;
 
 	const myLogger = logger.getLogger("my-module");
 	t.true(myLogger instanceof Logger, "Returned logger should be Logger instance");
 });
 
 test.serial("getGroupLogger", (t) => {
-	const {logger} = t.context;
-	const {GroupLogger} = logger.__test__;
+	const {logger, GroupLogger} = t.context;
 
 	const myLogger = logger.getGroupLogger("my-module");
 	t.true(myLogger instanceof GroupLogger, "Returned logger should be Logger instance");
@@ -162,15 +163,14 @@ test.serial("Environment variable UI5_LOG_LVL (invalid)", async (t) => {
 });
 
 test.serial("Logger", (t) => {
-	const {logger, npmLogStub} = t.context;
-	const {Logger} = logger.__test__;
+	const {Logger, npmLogStub} = t.context;
 
 	const myLogger = new Logger("myModule");
 
-	sinon.spy(logger, "isLevelEnabled");
+	sinon.stub(Logger, "isLevelEnabled");
 
 	myLogger.isLevelEnabled("error");
-	t.true(logger.isLevelEnabled.calledOnce, "Logger#isLevelEnabled should call static isLevelEnabled");
+	t.true(Logger.isLevelEnabled.calledOnce, "Logger#isLevelEnabled should call static Logger.isLevelEnabled");
 
 	const _logger = myLogger._getLogger();
 	t.is(_logger, npmLogStub, "_getLogger should return npmlog");
@@ -188,15 +188,14 @@ test.serial("Logger", (t) => {
 });
 
 test.serial("GroupLogger", (t) => {
-	const {logger} = t.context;
-	const {GroupLogger} = logger.__test__;
+	const {Logger, GroupLogger} = t.context;
 
 	const myLogger = new GroupLogger("myModule");
 
-	sinon.spy(logger, "isLevelEnabled");
+	sinon.stub(Logger, "isLevelEnabled");
 
 	myLogger.isLevelEnabled("error");
-	t.true(logger.isLevelEnabled.calledOnce, "Logger#isLevelEnabled should call static isLevelEnabled");
+	t.true(Logger.isLevelEnabled.calledOnce, "GroupLogger#isLevelEnabled should call static Logger.isLevelEnabled");
 
 	const _logger = myLogger._getLogger();
 
@@ -213,8 +212,7 @@ test.serial("GroupLogger", (t) => {
 });
 
 test.serial("GroupLogger#createSubLogger", (t) => {
-	const {logger} = t.context;
-	const {GroupLogger} = logger.__test__;
+	const {GroupLogger} = t.context;
 
 	const myLogger = new GroupLogger("myModule");
 
@@ -223,8 +221,7 @@ test.serial("GroupLogger#createSubLogger", (t) => {
 });
 
 test.serial("GroupLogger#createTaskLogger", (t) => {
-	const {logger} = t.context;
-	const {GroupLogger, TaskLogger} = logger.__test__;
+	const {GroupLogger, TaskLogger} = t.context;
 
 	const myLogger = new GroupLogger("myModule");
 
@@ -233,15 +230,14 @@ test.serial("GroupLogger#createTaskLogger", (t) => {
 });
 
 test.serial("TaskLogger", (t) => {
-	const {logger} = t.context;
-	const {TaskLogger} = logger.__test__;
+	const {Logger, TaskLogger} = t.context;
 
 	const myLogger = new TaskLogger("myModule");
 
-	sinon.spy(logger, "isLevelEnabled");
+	sinon.spy(Logger, "isLevelEnabled");
 
 	myLogger.isLevelEnabled("error");
-	t.true(logger.isLevelEnabled.calledOnce, "Logger#isLevelEnabled should call static isLevelEnabled");
+	t.true(Logger.isLevelEnabled.calledOnce, "TaskLogger#isLevelEnabled should call static Logger.isLevelEnabled");
 
 	const _logger = myLogger._getLogger();
 
@@ -258,8 +254,7 @@ test.serial("TaskLogger", (t) => {
 });
 
 test.serial("TaskLogger#addWork", (t) => {
-	const {logger} = t.context;
-	const {TaskLogger} = logger.__test__;
+	const {TaskLogger} = t.context;
 
 	const myLogger = new TaskLogger("myModule");
 
@@ -271,8 +266,7 @@ test.serial("TaskLogger#addWork", (t) => {
 });
 
 test.serial("TaskLogger#startWork", (t) => {
-	const {logger} = t.context;
-	const {TaskLogger} = logger.__test__;
+	const {TaskLogger} = t.context;
 
 	const myLogger = new TaskLogger("myModule", 3);
 
@@ -287,8 +281,7 @@ test.serial("TaskLogger#startWork", (t) => {
 });
 
 test.serial("TaskLogger#completeWork", (t) => {
-	const {logger} = t.context;
-	const {TaskLogger} = logger.__test__;
+	const {TaskLogger} = t.context;
 
 	const myLogger = new TaskLogger("myModule", 3);
 
@@ -307,8 +300,7 @@ test.serial("TaskLogger#completeWork", (t) => {
 });
 
 test.serial("TaskLogger#finish", (t) => {
-	const {logger} = t.context;
-	const {TaskLogger} = logger.__test__;
+	const {TaskLogger} = t.context;
 
 	const myLogger = new TaskLogger("myModule", 3);
 
