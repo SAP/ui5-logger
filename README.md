@@ -1,5 +1,5 @@
 ![UI5 icon](https://raw.githubusercontent.com/SAP/ui5-tooling/master/docs/images/UI5_logo_wide.png)
-
+TEST
 # ui5-logger
 > Internal logging module  
 > Part of the [UI5 Tooling](https://github.com/SAP/ui5-tooling)
