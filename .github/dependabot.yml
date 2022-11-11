@@ -17,5 +17,5 @@ updates:
   versioning-strategy: increase
   commit-message:
     prefix: "[DEPENDENCY]"
-    prefix-development: ""
+    prefix-development: "[INTERNAL]"
     include: "scope"
