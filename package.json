@@ -18,7 +18,9 @@
 	],
 	"type": "module",
 	"exports": {
-		".": "./lib/logger.js",
+		".": "./lib/index.js",
+		"./*": "./lib/loggers/*.js",
+		"./handlers/*": "./lib/handlers/*.js",
 		"./package.json": "./package.json"
 	},
 	"engines": {
@@ -108,6 +110,9 @@
 		"url": "git@github.com:SAP/ui5-logger.git"
 	},
 	"dependencies": {
+		"chalk": "^5.2.0",
+		"cli-progress": "^3.11.2",
+		"log-symbols": "^5.1.0",
 		"npmlog": "^7.0.1"
 	},
 	"devDependencies": {
@@ -127,6 +132,7 @@
 		"open-cli": "^7.1.0",
 		"rimraf": "^3.0.2",
 		"sinon": "^15.0.1",
+		"strip-ansi": "^7.0.1",
 		"tap-nyan": "^1.1.0",
 		"tap-xunit": "^2.4.1"
 	}

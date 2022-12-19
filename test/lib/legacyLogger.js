@@ -51,7 +51,7 @@ test.afterEach.always((t) => {
 	delete process.env.UI5_LOG_LVL;
 });
 
-test.serial("getLogger", (t) => {
+test.serial.skip("getLogger", (t) => {
 	const {logger} = t.context;
 	const {Logger} = logger.__test__;
 
@@ -59,7 +59,7 @@ test.serial("getLogger", (t) => {
 	t.true(myLogger instanceof Logger, "Returned logger should be Logger instance");
 });
 
-test.serial("getGroupLogger throws (deprecated)", (t) => {
+test.serial.skip("getGroupLogger throws (deprecated)", (t) => {
 	const {logger} = t.context;
 
 	t.throws(() => {
@@ -71,7 +71,7 @@ test.serial("getGroupLogger throws (deprecated)", (t) => {
 	});
 });
 
-test.serial("setLevel", (t) => {
+test.serial.skip("setLevel", (t) => {
 	const {logger} = t.context;
 
 	logger.setLevel("silly");
@@ -81,7 +81,7 @@ test.serial("setLevel", (t) => {
 	t.is(t.context.npmLogStub.level, "silly", "npmlog.level should still be set to 'silly'");
 });
 
-test.serial("isLevelEnabled", (t) => {
+test.serial.skip("isLevelEnabled", (t) => {
 	const {logger, npmLogStub} = t.context;
 
 	// On silly all levels should be enabled
@@ -125,7 +125,7 @@ test.serial("isLevelEnabled", (t) => {
 	}, {message: `Failed to find current log level "level should not be set here" in list of expected log levels`});
 });
 
-test.serial("setShowProgress (deprecated)", (t) => {
+test.serial.skip("setShowProgress (deprecated)", (t) => {
 	const {logger, npmLogStub} = t.context;
 
 	t.is(npmLogStub.enableProgress.callCount, 0, "enableProgress should not be called initially");
@@ -141,11 +141,11 @@ test.serial("setShowProgress (deprecated)", (t) => {
 	});
 });
 
-test.serial("npmlog.level default", (t) => {
+test.serial.skip("npmlog.level default", (t) => {
 	t.is(t.context.npmLogStub.level, "info", "Default level should be info");
 });
 
-test.serial("Environment variable UI5_LOG_LVL", async (t) => {
+test.serial.skip("Environment variable UI5_LOG_LVL", async (t) => {
 	const levels = ["silly", "verbose", "perf", "info", "warn", "error", "silent"];
 
 	for (const level of levels) {
@@ -157,7 +157,7 @@ test.serial("Environment variable UI5_LOG_LVL", async (t) => {
 	}
 });
 
-test.serial("Environment variable UI5_LOG_LVL (invalid)", async (t) => {
+test.serial.skip("Environment variable UI5_LOG_LVL (invalid)", async (t) => {
 	process.env.UI5_LOG_LVL = "all";
 	await t.throwsAsync(esmock("../../lib/logger"), {
 		message: `UI5 Logger: Environment variable UI5_LOG_LVL is set to an unknown log level "all". ` +
@@ -165,7 +165,7 @@ test.serial("Environment variable UI5_LOG_LVL (invalid)", async (t) => {
 	});
 });
 
-test.serial("Logger", (t) => {
+test.serial.skip("Logger", (t) => {
 	const {logger, npmLogStub, consoleLog} = t.context;
 	const {Logger} = logger.__test__;
 
@@ -197,7 +197,7 @@ test.serial("Logger", (t) => {
 	});
 });
 
-test.serial("Logger: Two arguments", (t) => {
+test.serial.skip("Logger: Two arguments", (t) => {
 	const {logger, npmLogStub, consoleLog} = t.context;
 	const {Logger} = logger.__test__;
 
@@ -225,7 +225,7 @@ test.serial("Logger: Two arguments", (t) => {
 	});
 });
 
-test.serial("Logger: Multiple arguments", (t) => {
+test.serial.skip("Logger: Multiple arguments", (t) => {
 	const {logger, npmLogStub, consoleLog} = t.context;
 	const {Logger} = logger.__test__;
 
@@ -257,7 +257,7 @@ test.serial("Logger: Multiple arguments", (t) => {
 	});
 });
 
-test.serial("Logger: String substitution characters", (t) => {
+test.serial.skip("Logger: String substitution characters", (t) => {
 	const {logger, npmLogStub, consoleLog} = t.context;
 	const {Logger} = logger.__test__;
 
@@ -280,7 +280,7 @@ test.serial("Logger: String substitution characters", (t) => {
 	});
 });
 
-test.serial("npmlog errors are send to console", (t) => {
+test.serial.skip("npmlog errors are send to console", (t) => {
 	const {npmLogOnEventName, npmLogOnEventFn, consoleLog} = t.context;
 
 	t.is(consoleLog.callCount, 0);
