@@ -4,11 +4,11 @@ import BuildLogger from "../../../lib/loggers/BuildLogger.js";
 
 test.serial.beforeEach((t) => {
 	t.context.logHandler = sinon.stub();
-	process.on("ui5-log", t.context.logHandler);
+	process.on("ui5.log", t.context.logHandler);
 });
 
 test.serial.afterEach.always((t) => {
-	process.off("ui5-log", t.context.logHandler);
+	process.off("ui5.log", t.context.logHandler);
 	delete process.env.UI5_LOG_LVL;
 	sinon.restore();
 });

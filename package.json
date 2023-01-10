@@ -112,7 +112,7 @@
 	"dependencies": {
 		"chalk": "^5.2.0",
 		"cli-progress": "^3.11.2",
-		"log-symbols": "^5.1.0",
+		"figures": "^5.0.0",
 		"npmlog": "^7.0.1"
 	},
 	"devDependencies": {
