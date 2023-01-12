@@ -89,7 +89,14 @@ test.serial("Log ProjectBuild status", (t) => {
 	myLogger.startProjectBuild("project.b");
 	myLogger.endProjectBuild("project.a");
 
-	t.is(stderrWriteSpy.callCount, 1, "Logged one message");
-	t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]), `${level} project-type project.name taskName: Message 1\n`,
+	t.is(stderrWriteSpy.callCount, 3, "Logged one message");
+	t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]),
+		`info Project 1 of 2: ✔ Skipping build of undefined project project.a\n`,
+		"Logged expected message");
+	t.is(stripAnsi(stderrWriteSpy.getCall(1).args[0]),
+		`info Project 2 of 2: ❯ Building undefined project project.b...\n`,
+		"Logged expected message");
+	t.is(stripAnsi(stderrWriteSpy.getCall(2).args[0]),
+		`verb Project 1 of 2: ✔ Finished building undefined project project.a\n`,
 		"Logged expected message");
 });
