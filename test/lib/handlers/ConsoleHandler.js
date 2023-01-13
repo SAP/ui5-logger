@@ -65,19 +65,19 @@ test.serial("Log Build status", (t) => {
 	const myLogger = new BuildLogger("Builder");
 
 	myLogger.setProjects(["project.a", "project.b"]);
-	myLogger.skipProjectBuild("project.a");
-	myLogger.startProjectBuild("project.b");
-	myLogger.endProjectBuild("project.a");
+	myLogger.skipProjectBuild("project.a", "project-type");
+	myLogger.startProjectBuild("project.b", "project-type");
+	myLogger.endProjectBuild("project.a", "project-type");
 
 	t.is(stderrWriteSpy.callCount, 3, "Logged one message");
 	t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]),
-		`info Project 1 of 2: ✔ Skipping build of undefined project project.a\n`,
+		`info Project 1 of 2: ✔ Skipping build of project-type project project.a\n`,
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteSpy.getCall(1).args[0]),
-		`info Project 2 of 2: ❯ Building undefined project project.b...\n`,
+		`info Project 2 of 2: ❯ Building project-type project project.b...\n`,
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteSpy.getCall(2).args[0]),
-		`verb Project 1 of 2: ✔ Finished building undefined project project.a\n`,
+		`verb Project 1 of 2: ✔ Finished building project-type project project.a\n`,
 		"Logged expected message");
 });
 

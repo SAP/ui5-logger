@@ -5,11 +5,11 @@ import Logger from "../../../lib/loggers/Logger.js";
 test.serial.beforeEach((t) => {
 	t.context.logHandler = sinon.stub();
 	t.context.consoleLogSpy = sinon.spy(console, "log");
-	process.on("ui5.log", t.context.logHandler);
+	process.on(Logger.LOG_EVENT_NAME, t.context.logHandler);
 });
 
 test.serial.afterEach.always((t) => {
-	process.off("ui5.log", t.context.logHandler);
+	process.off(Logger.LOG_EVENT_NAME, t.context.logHandler);
 	delete process.env.UI5_LOG_LVL;
 	sinon.restore();
 });
@@ -55,6 +55,10 @@ test.serial("isLevelEnabled", (t) => {
 		Logger.isLevelEnabled("warn");
 	}, {message: `UI5 Logger: Environment variable UI5_LOG_LVL is set to an unknown log level "unknown level". ` +
 			`Valid levels are silly, verbose, perf, info, warn, error, silent`});
+});
+
+test.serial("Correct log event name", (t) => {
+	t.is(Logger.LOG_EVENT_NAME, "ui5.log", "Correct log event name exposed");
 });
 
 test.serial("Setting all log levels via API", (t) => {
@@ -213,7 +217,7 @@ test.serial("No string substitution", (t) => {
 test.serial("No event listener", (t) => {
 	const {logHandler, consoleLogSpy} = t.context;
 	const myLogger = new Logger("my:module:name");
-	process.off("ui5.log", logHandler);
+	process.off(Logger.LOG_EVENT_NAME, logHandler);
 
 	myLogger.info("Message 1");
 	myLogger.verbose("Message 2"); // Not logged for default log-level "info"
@@ -226,7 +230,7 @@ test.serial("No event listener", (t) => {
 test.serial("No logging for silent level", (t) => {
 	const {logHandler, consoleLogSpy} = t.context;
 	const myLogger = new Logger("my:module:name");
-	process.off("ui5.log", logHandler); // Remove listener to get direct console logging
+	process.off(Logger.LOG_EVENT_NAME, logHandler); // Remove listener to get direct console logging
 	process.env.UI5_LOG_LVL = "silent";
 
 	Logger.LOG_LEVELS.forEach((level) => {
