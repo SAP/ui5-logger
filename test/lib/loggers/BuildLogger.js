@@ -17,7 +17,11 @@ test.serial("Logger: Log messages", (t) => {
 	const {logHandler} = t.context;
 	const myLogger = new BuildLogger("my:module:name");
 
-	["silly", "verbose", "perf", "info", "warn", "error", "silent"].forEach((level) => {
+	BuildLogger.LOG_LEVELS.forEach((level) => {
+		if (level === "silent") {
+			// Can't log silent messages
+			return;
+		}
 		myLogger[level]("Message 1");
 		t.is(logHandler.callCount, 1, "Emitted and captured one log event");
 		t.deepEqual(logHandler.getCall(0).args[0], {

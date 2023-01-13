@@ -2,10 +2,9 @@ import test from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
 import ConsoleHandler from "../../../lib/handlers/ConsoleHandler.js";
-import StandardLogger from "../../../lib/loggers/StandardLogger.js";
+import Logger from "../../../lib/loggers/Logger.js";
 import BuildLogger from "../../../lib/loggers/BuildLogger.js";
 import ProjectBuildLogger from "../../../lib/loggers/ProjectBuildLogger.js";
-import TaskLogger from "../../../lib/loggers/TaskLogger.js";
 
 test.serial.beforeEach((t) => {
 	t.context.consoleHandler = new ConsoleHandler();
@@ -21,9 +20,13 @@ test.serial.afterEach.always((t) => {
 
 test.serial("Log standard messages", (t) => {
 	const {stderrWriteSpy} = t.context;
-	const myLogger = new StandardLogger("my-module");
+	const myLogger = new Logger("my-module");
 
-	StandardLogger.LOG_LEVELS.forEach((level) => {
+	Logger.LOG_LEVELS.forEach((level) => {
+		if (level === "silent") {
+			// Can't log silent messages
+			return;
+		}
 		myLogger[level]("Message 1");
 		if (level === "verbose") {
 			// "verbose" is abbreviated
@@ -36,53 +39,30 @@ test.serial("Log standard messages", (t) => {
 	});
 });
 
-test.serial("Log ProjectBuild messages", (t) => {
+test.serial("Log Build messages", (t) => {
 	const {stderrWriteSpy} = t.context;
-	const myLogger = new ProjectBuildLogger({
-		projectName: "project.name",
-		projectType: "project-type"
-	});
+	const myLogger = new BuildLogger("Builder");
 
-	ProjectBuildLogger.LOG_LEVELS.forEach((level) => {
+	BuildLogger.LOG_LEVELS.forEach((level) => {
+		if (level === "silent") {
+			// Can't log silent messages
+			return;
+		}
 		myLogger[level]("Message 1");
 		if (level === "verbose") {
 			// "verbose" is abbreviated
 			level = "verb";
 		}
 		t.is(stderrWriteSpy.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]), `${level} project-type project.name: Message 1\n`,
+		t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]), `${level} Builder: Message 1\n`,
 			"Logged expected message");
 		stderrWriteSpy.resetHistory();
 	});
 });
 
-test.serial("Log Task messages", (t) => {
+test.serial("Log Build status", (t) => {
 	const {stderrWriteSpy} = t.context;
-	const myLogger = new TaskLogger({
-		projectName: "project.name",
-		projectType: "project-type",
-		taskName: "taskName"
-	});
-
-	TaskLogger.LOG_LEVELS.forEach((level) => {
-		myLogger[level]("Message 1");
-		if (level === "verbose") {
-			// "verbose" is abbreviated
-			level = "verb";
-		}
-		t.is(stderrWriteSpy.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]), `${level} project-type project.name taskName: Message 1\n`,
-			"Logged expected message");
-		stderrWriteSpy.resetHistory();
-	});
-});
-
-test.serial("Log ProjectBuild status", (t) => {
-	const {stderrWriteSpy} = t.context;
-	const myLogger = new BuildLogger({
-		projectName: "project.name",
-		projectType: "project-type"
-	});
+	const myLogger = new BuildLogger("Builder");
 
 	myLogger.setProjects(["project.a", "project.b"]);
 	myLogger.skipProjectBuild("project.a");
@@ -98,5 +78,64 @@ test.serial("Log ProjectBuild status", (t) => {
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteSpy.getCall(2).args[0]),
 		`verb Project 1 of 2: ✔ Finished building undefined project project.a\n`,
+		"Logged expected message");
+});
+
+test.serial("Log ProjectBuild messages", (t) => {
+	const {stderrWriteSpy} = t.context;
+	const myLogger = new ProjectBuildLogger({
+		moduleName: "project-build",
+		projectName: "project.name",
+		projectType: "project-type"
+	});
+
+	ProjectBuildLogger.LOG_LEVELS.forEach((level) => {
+		if (level === "silent") {
+			// Can't log silent messages
+			return;
+		}
+		myLogger[level]("Message 1");
+		if (level === "verbose") {
+			// "verbose" is abbreviated
+			level = "verb";
+		}
+		t.is(stderrWriteSpy.callCount, 1, "Logged one message");
+		t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]), `${level} project-build: Message 1\n`,
+			"Logged expected message");
+		stderrWriteSpy.resetHistory();
+	});
+});
+
+test.serial("Log ProjectBuild status", (t) => {
+	const {stderrWriteSpy} = t.context;
+
+	// Make ConsoleHandler aware of the project first
+	const buildLogger = new BuildLogger("Builder");
+	buildLogger.setProjects(["project.a"]);
+
+	const myLogger = new ProjectBuildLogger({
+		moduleName: "build-module",
+		projectName: "project.a",
+		projectType: "project-type"
+	});
+
+	myLogger.setTasks(["task.a", "task.b"]);
+	myLogger.startTask("task.a");
+	myLogger.endTask("task.a");
+	myLogger.startTask("task.b");
+	myLogger.endTask("task.b");
+
+	t.is(stderrWriteSpy.callCount, 4, "Logged one message");
+	t.is(stripAnsi(stderrWriteSpy.getCall(0).args[0]),
+		`info project.a Task 1 of 2 › Running task task.a...\n`,
+		"Logged expected message");
+	t.is(stripAnsi(stderrWriteSpy.getCall(1).args[0]),
+		`verb project.a Task 1 of 2 ✔ Finished task task.a\n`,
+		"Logged expected message");
+	t.is(stripAnsi(stderrWriteSpy.getCall(2).args[0]),
+		`info project.a Task 2 of 2 › Running task task.b...\n`,
+		"Logged expected message");
+	t.is(stripAnsi(stderrWriteSpy.getCall(3).args[0]),
+		`verb project.a Task 2 of 2 ✔ Finished task task.b\n`,
 		"Logged expected message");
 });
