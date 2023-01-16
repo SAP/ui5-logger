@@ -2,15 +2,12 @@ import test from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
 import ConsoleHandler from "../../../lib/handlers/ConsoleHandler.js";
-import Logger from "../../../lib/loggers/Logger.js";
-import BuildLogger from "../../../lib/loggers/BuildLogger.js";
-import ProjectBuildLogger from "../../../lib/loggers/ProjectBuildLogger.js";
 
 test.serial.beforeEach((t) => {
-	t.context.consoleHandler = new ConsoleHandler();
+	t.context.consoleHandler = ConsoleHandler.init();
 	t.context.stderrWriteStub = sinon.stub(process.stderr, "write");
 	t.context.originalIsTty = process.stderr.isTTY;
-	process.env.UI5_LOG_LVL = "silly";
+	process.env.UI5_LOG_LVL = "info";
 });
 
 test.serial.afterEach.always((t) => {
@@ -20,266 +17,790 @@ test.serial.afterEach.always((t) => {
 	delete process.env.UI5_LOG_LVL;
 });
 
-test.serial("Log standard messages", (t) => {
+test.serial("Log event", (t) => {
 	const {stderrWriteStub} = t.context;
-	const myLogger = new Logger("my-module");
 
-	Logger.LOG_LEVELS.forEach((level) => {
-		if (level === "silent") {
-			// Can't log silent messages
-			return;
-		}
-		myLogger[level]("Message 1");
-		if (level === "verbose") {
-			// "verbose" is abbreviated
-			level = "verb";
-		}
-		t.is(stderrWriteStub.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${level} my-module: Message 1\n`,
-			"Logged expected message");
-		stderrWriteStub.resetHistory();
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 1",
+		moduleName: "my:module"
 	});
+
+	t.is(stderrWriteStub.callCount, 1, "Logged one message");
+	t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `info my:module: Message 1\n`,
+		"Logged expected message");
 });
 
-test.serial("Log Build messages", (t) => {
-	const {stderrWriteStub} = t.context;
-	const myLogger = new BuildLogger("Builder");
+test.serial("Disable", (t) => {
+	const {consoleHandler, stderrWriteStub} = t.context;
+	consoleHandler.disable();
 
-	BuildLogger.LOG_LEVELS.forEach((level) => {
-		if (level === "silent") {
-			// Can't log silent messages
-			return;
-		}
-		myLogger[level]("Message 1");
-		if (level === "verbose") {
-			// "verbose" is abbreviated
-			level = "verb";
-		}
-		t.is(stderrWriteStub.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${level} Builder: Message 1\n`,
-			"Logged expected message");
-		stderrWriteStub.resetHistory();
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 1",
+		moduleName: "my:module"
 	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged no message");
 });
 
-test.serial("Log Build status", (t) => {
-	const {stderrWriteStub} = t.context;
-	const myLogger = new BuildLogger("Builder");
+test.serial("Enable", (t) => {
+	const {consoleHandler, stderrWriteStub} = t.context;
+	consoleHandler.disable();
 
-	myLogger.setProjects(["project.a", "project.b"]);
-	myLogger.skipProjectBuild("project.a", "project-type");
-	myLogger.startProjectBuild("project.b", "project-type");
-	myLogger.endProjectBuild("project.a", "project-type");
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 1",
+		moduleName: "my:module"
+	});
 
-	t.is(stderrWriteStub.callCount, 3, "Logged one message");
+	t.is(stderrWriteStub.callCount, 0, "Logged no message");
+
+	consoleHandler.enable();
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 2",
+		moduleName: "my:module"
+	});
+
+	t.is(stderrWriteStub.callCount, 1, "Logged no message");
 	t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]),
-		`info Project 1 of 2: ✔ Skipping build of project-type project project.a\n`,
-		"Logged expected message");
-	t.is(stripAnsi(stderrWriteStub.getCall(1).args[0]),
-		`info Project 2 of 2: ❯ Building project-type project project.b...\n`,
-		"Logged expected message");
-	t.is(stripAnsi(stderrWriteStub.getCall(2).args[0]),
-		`verb Project 1 of 2: ✔ Finished building project-type project project.a\n`,
+		`info my:module: Message 2\n`,
 		"Logged expected message");
 });
 
-test.serial("Log ProjectBuild messages", (t) => {
+test.serial("Logging restricted by log level setting", (t) => {
 	const {stderrWriteStub} = t.context;
-	const myLogger = new ProjectBuildLogger({
-		moduleName: "project-build",
-		projectName: "project.name",
-		projectType: "project-type"
+
+	process.emit("ui5.log", {
+		level: "verbose",
+		message: "Message 1",
+		moduleName: "my:module"
 	});
 
-	ProjectBuildLogger.LOG_LEVELS.forEach((level) => {
-		if (level === "silent") {
-			// Can't log silent messages
-			return;
-		}
-		myLogger[level]("Message 1");
-		if (level === "verbose") {
-			// "verbose" is abbreviated
-			level = "verb";
-		}
-		t.is(stderrWriteStub.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${level} project-build: Message 1\n`,
-			"Logged expected message");
-		stderrWriteStub.resetHistory();
-	});
+	t.is(stderrWriteStub.callCount, 0, "Logged no message");
 });
 
-test.serial("Log ProjectBuild status", (t) => {
+test.serial("Logging with unknown log level", (t) => {
 	const {stderrWriteStub} = t.context;
 
-	// Make ConsoleHandler aware of the project first
-	const buildLogger = new BuildLogger("Builder");
-	buildLogger.setProjects(["project.a"]);
+	t.throws(() => {
+		process.emit("ui5.log", {
+			level: "foo",
+			message: "Message 1",
+			moduleName: "my:module"
+		});
+	}, {
+		message: `Unknown log level "foo"`
+	});
 
-	const myLogger = new ProjectBuildLogger({
-		moduleName: "build-module",
+	t.is(stderrWriteStub.callCount, 0, "Logged no message");
+});
+
+test.serial("Build status events", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "verbose", // Should not get logged
 		projectName: "project.a",
-		projectType: "project-type"
+		projectType: "project-type",
+		status: "project-build-start",
 	});
 
-	myLogger.setTasks(["task.a", "task.b"]);
-	myLogger.startTask("task.a");
-	myLogger.endTask("task.a");
-	myLogger.startTask("task.b");
-	myLogger.endTask("task.b");
+	process.emit("ui5.build-status", {
+		level: "info",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-end",
+	});
 
-	t.is(stderrWriteStub.callCount, 4, "Logged four messages");
+	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 	t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]),
-		`info project.a Task 1 of 2 › Running task task.a...\n`,
-		"Logged expected message");
-	t.is(stripAnsi(stderrWriteStub.getCall(1).args[0]),
-		`verb project.a Task 1 of 2 ✔ Finished task task.a\n`,
-		"Logged expected message");
-	t.is(stripAnsi(stderrWriteStub.getCall(2).args[0]),
-		`info project.a Task 2 of 2 › Running task task.b...\n`,
-		"Logged expected message");
-	t.is(stripAnsi(stderrWriteStub.getCall(3).args[0]),
-		`verb project.a Task 2 of 2 ✔ Finished task task.b\n`,
+		`info Project 1 of 1: ✔ Finished building project-type project project.a\n`,
 		"Logged expected message");
 });
 
-test.serial("Log through progress bar", async (t) => {
+test.serial("Build status: Unknown project", (t) => {
 	const {stderrWriteStub} = t.context;
-	const buildLogger = new BuildLogger("Builder");
 
-	process.env.UI5_LOG_LVL = "info";
-	if (!process.stderr.isTTY) {
-		// Force TTY in test env to enable progress bar
-		process.stderr.isTTY = true;
-	}
-	buildLogger.setProjects(["project.a", "project.b"]);
-	const myLogger = new Logger("my-module");
-	myLogger.info("Message 1");
-
-	await new Promise((resolve) => {
-		setTimeout(resolve, 20);
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-start",
+		});
+	}, {
+		message: "ConsoleHandler: Unknown project project.a"
 	});
 
-	const allWrites = stderrWriteStub.getCalls();
-	const logWrite = allWrites.find((call) => {
-		return call.firstArg.includes("Message 1");
-	});
-	t.is(stripAnsi(logWrite.firstArg),
-		`info my-module: Message 1\n`,
-		"Logged expected message");
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
 });
 
-test.serial("Do not use progress bar for log level verbose", async (t) => {
+test.serial("Build status (start): Duplicate project build start", (t) => {
 	const {stderrWriteStub} = t.context;
-	const buildLogger = new BuildLogger("Builder");
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-start",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-start",
+		});
+	}, {
+		message: "ConsoleHandler: Unexpected duplicate project-build-start event for project project.a"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (start): Project build already ended", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-start",
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-end",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-start",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected project-build-start event for project project.a. Project build already ended"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (start): Project build already skipped", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-skip",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-start",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected project-build-start event for project project.a. " +
+			"Project build already skipped"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (end): Duplicate project build end", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-start",
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-end",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-end",
+		});
+	}, {
+		message: "ConsoleHandler: Unexpected duplicate project-build-end event for project project.a"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (end): Project build not started", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-end",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected project-build-end event for project project.a. " +
+			"No corresponding project-build-start event handled"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (end): Project build already skipped", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-skip",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-end",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected project-build-end event for project project.a. " +
+			"Project build already skipped"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (skip): Duplicate project build skip", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-skip",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-skip",
+		});
+	}, {
+		message: "ConsoleHandler: Unexpected duplicate project-build-skip event for project project.a"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (skip): Project build already started", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-start",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-skip",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected project-build-skip event for project project.a. " +
+			"Project build already started"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status (skip): Project build already ended", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-start",
+	});
+
+	process.emit("ui5.build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-end",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			status: "project-build-skip",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected project-build-skip event for project project.a. " +
+			"Project build already ended"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("Build status: Unknown status", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
 
 	process.env.UI5_LOG_LVL = "verbose";
-	if (!process.stderr.isTTY) {
-		// Forced TTY would enable progress bar, however verbose log level disables it again
-		process.stderr.isTTY = true;
-	}
-	buildLogger.setProjects(["project.a", "project.b"]);
-	const myLogger = new Logger("my-module");
-	myLogger.info("Message 1");
-
-	await new Promise((resolve) => {
-		setTimeout(resolve, 20);
+	process.emit("ui5.build-status", {
+		level: "info",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "foo",
 	});
 
-	t.is(stderrWriteStub.callCount, 1, "Logged one messages");
+	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 	t.is(stripAnsi(stderrWriteStub.firstCall.firstArg),
-		`info my-module: Message 1\n`,
+		`verb ConsoleHandler: Received unknown build-status foo for project project.a\n`,
 		"Logged expected message");
 });
 
-test.serial("Return to direct logging once progress bar stopped", async (t) => {
-	const {consoleHandler, stderrWriteStub} = t.context;
-	const buildLogger = new BuildLogger("Builder");
+test.serial("ProjectBuild status events", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
 
-	process.env.UI5_LOG_LVL = "info";
-	if (!process.stderr.isTTY) {
-		// Force TTY in test env to enable progress bar
-		process.stderr.isTTY = true;
-	}
-	buildLogger.setProjects(["project.a", "project.b"]);
+	process.emit("ui5.project-build-metadata", {
+		projectName: "project.a",
+		projectType: "project-type",
+		tasksToRun: ["task.a"]
+	});
+
+	process.emit("ui5.project-build-status", {
+		level: "verbose", // Should not get logged
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "task-start",
+	});
+
+	process.emit("ui5.project-build-status", {
+		level: "info",
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "task-end",
+	});
+
+	t.is(stderrWriteStub.callCount, 1, "Logged one message");
+	t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]),
+		`info project.a ✔ Finished task task.a\n`,
+		"Logged expected message");
+});
+
+test.serial("ProjectBuild status: Unknown project", (t) => {
+	const {stderrWriteStub} = t.context;
+
+	t.throws(() => {
+		process.emit("ui5.project-build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			taskName: "task.a",
+			status: "task-end",
+		});
+	}, {
+		message: "ConsoleHandler: Unknown project project.a"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("ProjectBuild status: Unknown task", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	t.throws(() => {
+		process.emit("ui5.project-build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			taskName: "task.a",
+			status: "task-end",
+		});
+	}, {
+		message: "ConsoleHandler: Unknown task task.a for project project.a"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("ProjectBuild status (start): Duplicate task execution start", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.project-build-metadata", {
+		projectName: "project.a",
+		projectType: "project-type",
+		tasksToRun: ["task.a"]
+	});
+
+	process.emit("ui5.project-build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "task-start",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.project-build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			taskName: "task.a",
+			status: "task-start",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected duplicate task-start event for project project.a, task task.a"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("ProjectBuild status (start): Task execution already ended", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.project-build-metadata", {
+		projectName: "project.a",
+		projectType: "project-type",
+		tasksToRun: ["task.a"]
+	});
+
+	process.emit("ui5.project-build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "task-start",
+	});
+
+	process.emit("ui5.project-build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "task-end",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.project-build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			taskName: "task.a",
+			status: "task-start",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected task-start event for project project.a, task task.a. " +
+			"Task execution already ended"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.project-build-metadata", {
+		projectName: "project.a",
+		projectType: "project-type",
+		tasksToRun: ["task.a"]
+	});
+
+	process.emit("ui5.project-build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "task-start",
+	});
+
+	process.emit("ui5.project-build-status", {
+		level: "silly",
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "task-end",
+	});
+
+	t.throws(() => {
+		process.emit("ui5.project-build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			taskName: "task.a",
+			status: "task-end",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected duplicate task-end event for project project.a, task task.a"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("ProjectBuild status (end): Task execution not started", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.project-build-metadata", {
+		projectName: "project.a",
+		projectType: "project-type",
+		tasksToRun: ["task.a"]
+	});
+
+	t.throws(() => {
+		process.emit("ui5.project-build-status", {
+			level: "info",
+			projectName: "project.a",
+			projectType: "project-type",
+			taskName: "task.a",
+			status: "task-end",
+		});
+	}, {
+		message:
+			"ConsoleHandler: Unexpected task-end event for project project.a, task task.a. " +
+			"No corresponding task-start event handled"
+	});
+
+	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
+});
+
+test.serial("ProjectBuild status: Unknown status", (t) => {
+	const {stderrWriteStub} = t.context;
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	process.emit("ui5.project-build-metadata", {
+		projectName: "project.a",
+		projectType: "project-type",
+		tasksToRun: ["task.a"]
+	});
+
+	process.env.UI5_LOG_LVL = "verbose";
+	process.emit("ui5.project-build-status", {
+		level: "info",
+		projectName: "project.a",
+		projectType: "project-type",
+		taskName: "task.a",
+		status: "foo",
+	});
+
+	t.is(stderrWriteStub.callCount, 1, "Logged one message");
+	t.is(stripAnsi(stderrWriteStub.firstCall.firstArg),
+		`verb ConsoleHandler: Received unknown project-build-status foo for project project.a\n`,
+		"Logged expected message");
+});
+
+test.serial("No progress bar in test environment", (t) => {
+	const {consoleHandler} = t.context;
+
+	// Since there is no interactive terminal, progress bar should not be used/returned
+	t.falsy(consoleHandler._getProgressBar(), "No progress bar returned");
+});
+
+test.serial("No progress bar for log level verbose", (t) => {
+	const {consoleHandler} = t.context;
+
+	process.stderr.isTTY = true;
+	process.env.UI5_LOG_LVL = "verbose";
+
+	// Since there is no interactive terminal, progress bar should not be used/returned
+	t.falsy(consoleHandler._getProgressBar(), "No progress bar returned");
+});
+
+test.serial("Progress bar completion does not drop any logs", async (t) => {
+	const {consoleHandler, stderrWriteStub} = t.context;
+
+	// Force TTY in test env to enable progress bar
+	process.stderr.isTTY = true;
+
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
 	const pb = consoleHandler._getProgressBar();
 
 	t.true(pb.isActive, "Progress bar is active");
 
-	// Complete all projects (note that here are no tasks to complete)
-	buildLogger.skipProjectBuild("project.a", "project-type");
-	buildLogger.startProjectBuild("project.b", "project-type");
-	buildLogger.endProjectBuild("project.a", "project-type");
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 1",
+		moduleName: "my:module"
+	});
+
+	// Complete all progress
+	process.emit("ui5.build-status", {
+		level: "info",
+		projectName: "project.a",
+		projectType: "project-type",
+		status: "project-build-skip",
+	});
+
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 2",
+		moduleName: "my:module"
+	});
 
 	t.false(pb.isActive, "Progress bar is not active anymore");
 
 	// Wait for async progress bar completion (also fires stop event)
 	await new Promise((resolve) => {
-		setTimeout(resolve, 100);
+		setTimeout(resolve, 10);
 	});
 
-	// Clear stub history
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 3",
+		moduleName: "my:module"
+	});
+
+	const allWriteCalls = stderrWriteStub.getCalls();
+	t.true(allWriteCalls.length > 2, "Multiple write calls indicate progress bar was active");
+
+	const firstMessage = allWriteCalls.find((call) => {
+		return call.firstArg.includes("Message 1");
+	});
+	t.truthy(firstMessage, "Logged first message");
+	t.is(stripAnsi(firstMessage.firstArg),
+		`info my:module: Message 1\n`,
+		"Logged expected first message");
+
+	const secondMessage = allWriteCalls.find((call) => {
+		return call.firstArg.includes("Message 2");
+	});
+	t.truthy(secondMessage, "Logged second message");
+	t.is(stripAnsi(secondMessage.firstArg),
+		`info my:module: Message 2\n`,
+		"Logged expected second message");
+
+	const thirdMessage = allWriteCalls.find((call) => {
+		return call.firstArg.includes("Message 3");
+	});
+	t.truthy(thirdMessage, "Logged third message");
+	t.is(stripAnsi(thirdMessage.firstArg),
+		`info my:module: Message 3\n`,
+		"Logged expected third message");
+});
+
+test.serial("Disable: Stops progress bar", (t) => {
+	const {consoleHandler, stderrWriteStub} = t.context;
+
+	// Force TTY in test env to enable progress bar
+	process.stderr.isTTY = true;
+
+	process.emit("ui5.build-metadata", {
+		projectsToBuild: ["project.a"]
+	});
+
+	const pb = consoleHandler._getProgressBar();
+
+	t.true(pb.isActive, "Progress bar is active");
+
+	consoleHandler.disable();
 	stderrWriteStub.resetHistory();
 
-	// Log a normal message
-	const myLogger = new Logger("my-module");
-	myLogger.info("Message 1");
+	t.false(pb.isActive, "Progress bar is not active anymore");
 
-	t.is(stderrWriteStub.callCount, 1, "Logged one messages");
-	t.is(stripAnsi(stderrWriteStub.firstCall.firstArg),
-		`info my-module: Message 1\n`,
-		"Logged expected message");
-});
-
-test.serial("Progress bar progress", (t) => {
-	const {consoleHandler} = t.context;
-	const buildLogger = new BuildLogger("Builder");
-	const projectBuildLoggerA = new ProjectBuildLogger({
-		moduleName: "ProjectBuilder",
-		projectName: "project.a",
-		projectType: "project-type",
-	});
-	const projectBuildLoggerB = new ProjectBuildLogger({
-		moduleName: "ProjectBuilder",
-		projectName: "project.b",
-		projectType: "project-type",
+	// Re-enable and log a message
+	consoleHandler.enable();
+	process.emit("ui5.log", {
+		level: "info",
+		message: "Message 1",
+		moduleName: "my:module"
 	});
 
-	process.env.UI5_LOG_LVL = "info";
-	if (!process.stderr.isTTY) {
-		// Force TTY in test env to enable progress bar
-		process.stderr.isTTY = true;
-	}
-	const pb = consoleHandler._getProgressBar();
-	buildLogger.setProjects(["project.a", "project.b"]);
-	t.is(pb.getTotal(), 4, "Correct progress total after setting projects");
-	t.is(pb.getProgress(), 0, "No progress after setting projects to build");
-
-	// Set tasks
-	projectBuildLoggerA.setTasks(["task.a", "task.b", "task.c"]);
-	t.is(pb.getTotal(), 7, "Correct progress total after setting tasks");
-	projectBuildLoggerB.setTasks(["task.a", "task.b", "task.c"]);
-	t.is(pb.getTotal(), 10, "Correct progress total after setting tasks");
-	t.is(pb.getProgress(), 0, "No progress after setting all projects and tasks");
-
-	// Complete all projects
-	buildLogger.skipProjectBuild("project.a", "project-type");
-	t.is(pb.getProgress(), 0.5, "Correct progress after skipping project.a and all it's tasks");
-
-	buildLogger.startProjectBuild("project.b", "project-type");
-	t.is(pb.getProgress(), 0.5, "Unchanged progress after starting project.b");
-
-	projectBuildLoggerB.startTask("task.a");
-	projectBuildLoggerB.endTask("task.a");
-	t.is(pb.getProgress(), 0.6, "Correct progress after ending task.a");
-
-	projectBuildLoggerB.startTask("task.b");
-	projectBuildLoggerB.endTask("task.b");
-	t.is(pb.getProgress(), 0.7, "Correct progress after ending task.b");
-
-	projectBuildLoggerB.startTask("task.c");
-	projectBuildLoggerB.endTask("task.c");
-	t.is(pb.getProgress(), 0.8, "Correct progress after ending task.c");
-
-	buildLogger.endProjectBuild("project.a", "project-type");
-	t.is(pb.getProgress(), 1, "Correct progress after starting project.b");
+	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 });
+
