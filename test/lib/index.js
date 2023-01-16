@@ -22,3 +22,12 @@ test.serial("isLevelEnabled", (t) => {
 	t.true(logger.isLevelEnabled("error"));
 	t.true(logger.isLevelEnabled("silent"));
 });
+
+test.serial("setLevel", (t) => {
+	logger.setLevel("silent");
+	t.is(process.env.UI5_LOG_LVL, "silent", "Log level set correctly");
+});
+
+test.serial("getLevel", (t) => {
+	t.is(logger.getLevel(), "info", "Returned default log level");
+});
