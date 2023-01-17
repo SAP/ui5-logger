@@ -1,6 +1,7 @@
 import test from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
+import figures from "figures";
 import ConsoleHandler from "../../../lib/handlers/ConsoleHandler.js";
 
 test.serial.beforeEach((t) => {
@@ -119,7 +120,7 @@ test.serial("Build status events", (t) => {
 
 	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 	t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]),
-		`info Project 1 of 1: ✔ Finished building project-type project project.a\n`,
+		`info Project 1 of 1: ${figures.tick} Finished building project-type project project.a\n`,
 		"Logged expected message");
 });
 
@@ -458,7 +459,7 @@ test.serial("ProjectBuild status events", (t) => {
 
 	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 	t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]),
-		`info project.a ✔ Finished task task.a\n`,
+		`info project.a ${figures.tick} Finished task task.a\n`,
 		"Logged expected message");
 });
 

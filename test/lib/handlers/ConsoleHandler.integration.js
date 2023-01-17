@@ -1,6 +1,7 @@
 import test from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
+import figures from "figures";
 import ConsoleHandler from "../../../lib/handlers/ConsoleHandler.js";
 import Logger from "../../../lib/loggers/Logger.js";
 import BuildLogger from "../../../lib/loggers/BuildLogger.js";
@@ -100,13 +101,13 @@ test.serial("Log Build status", (t) => {
 
 	t.is(stderrWriteStub.callCount, 3, "Logged one message");
 	t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]),
-		`info Project 1 of 2: ✔ Skipping build of project-type project project.a\n`,
+		`info Project 1 of 2: ${figures.tick} Skipping build of project-type project project.a\n`,
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteStub.getCall(1).args[0]),
-		`info Project 2 of 2: ❯ Building project-type project project.b...\n`,
+		`info Project 2 of 2: ${figures.pointer} Building project-type project project.b...\n`,
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteStub.getCall(2).args[0]),
-		`verb Project 2 of 2: ✔ Finished building project-type project project.b\n`,
+		`verb Project 2 of 2: ${figures.tick} Finished building project-type project project.b\n`,
 		"Logged expected message");
 });
 test.serial("Build status log restricted by log level", (t) => {
@@ -172,13 +173,13 @@ test.serial("Log ProjectBuild status", (t) => {
 		`info project.a Task 1 of 2 › Running task task.a...\n`,
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteStub.getCall(1).args[0]),
-		`verb project.a Task 1 of 2 ✔ Finished task task.a\n`,
+		`verb project.a Task 1 of 2 ${figures.tick} Finished task task.a\n`,
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteStub.getCall(2).args[0]),
 		`info project.a Task 2 of 2 › Running task task.b...\n`,
 		"Logged expected message");
 	t.is(stripAnsi(stderrWriteStub.getCall(3).args[0]),
-		`verb project.a Task 2 of 2 ✔ Finished task task.b\n`,
+		`verb project.a Task 2 of 2 ${figures.tick} Finished task task.b\n`,
 		"Logged expected message");
 });
 
