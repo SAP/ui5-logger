@@ -4,7 +4,7 @@ import Logger from "../../../lib/loggers/Logger.js";
 
 test.serial.beforeEach((t) => {
 	t.context.logHandler = sinon.stub();
-	t.context.consoleLogSpy = sinon.spy(console, "log");
+	t.context.stderrWriteStub = sinon.stub(process.stderr, "write");
 	process.on(Logger.LOG_EVENT_NAME, t.context.logHandler);
 });
 
@@ -114,7 +114,7 @@ test.serial("Illegal module names", (t) => {
 });
 
 test.serial("Log messages", (t) => {
-	const {logHandler, consoleLogSpy} = t.context;
+	const {logHandler, stderrWriteStub} = t.context;
 	const myLogger = new Logger("my:module:name");
 
 	// Log level does not influence events
@@ -135,7 +135,7 @@ test.serial("Log messages", (t) => {
 		logHandler.reset();
 	});
 
-	t.is(consoleLogSpy.callCount, 0, "console.log was never called");
+	t.is(stderrWriteStub.callCount, 0, "stderr.write was never called");
 });
 
 test.serial("Log object", (t) => {
@@ -215,20 +215,20 @@ test.serial("No string substitution", (t) => {
 });
 
 test.serial("No event listener", (t) => {
-	const {logHandler, consoleLogSpy} = t.context;
+	const {logHandler, stderrWriteStub} = t.context;
 	const myLogger = new Logger("my:module:name");
 	process.off(Logger.LOG_EVENT_NAME, logHandler);
 
 	myLogger.info("Message 1");
 	myLogger.verbose("Message 2"); // Not logged for default log-level "info"
 	myLogger.error("Message 3");
-	t.is(consoleLogSpy.callCount, 2, "console.log got called twice");
-	t.is(consoleLogSpy.getCall(0).args[0], "[info] my:module:name: Message 1", "Logged expected message");
-	t.is(consoleLogSpy.getCall(1).args[0], "[error] my:module:name: Message 3", "Logged expected message");
+	t.is(stderrWriteStub.callCount, 2, "stderr.write got called twice");
+	t.is(stderrWriteStub.getCall(0).args[0], "[info] my:module:name: Message 1\n", "Logged expected message");
+	t.is(stderrWriteStub.getCall(1).args[0], "[error] my:module:name: Message 3\n", "Logged expected message");
 });
 
 test.serial("No logging for silent level", (t) => {
-	const {logHandler, consoleLogSpy} = t.context;
+	const {logHandler, stderrWriteStub} = t.context;
 	const myLogger = new Logger("my:module:name");
 	process.off(Logger.LOG_EVENT_NAME, logHandler); // Remove listener to get direct console logging
 	process.env.UI5_LOG_LVL = "silent";
@@ -240,5 +240,5 @@ test.serial("No logging for silent level", (t) => {
 		}
 		myLogger[level]("Message");
 	});
-	t.is(consoleLogSpy.callCount, 0, "console.log never got called");
+	t.is(stderrWriteStub.callCount, 0, "stderr.write never got called");
 });

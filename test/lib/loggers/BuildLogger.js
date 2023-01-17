@@ -51,7 +51,7 @@ test.serial("Log messages", (t) => {
 
 	t.is(metadataHandler.callCount, 0, "No build-metadata event emitted");
 	t.is(statusHandler.callCount, 0, "No build-status event emitted");
-	t.is(logStub.callCount, 0, "console.log was never called");
+	t.is(logStub.callCount, 0, "_log was never called");
 });
 
 test.serial("Set projects", (t) => {
@@ -65,7 +65,7 @@ test.serial("Set projects", (t) => {
 
 	t.is(logHandler.callCount, 0, "No log event emitted");
 	t.is(statusHandler.callCount, 0, "No build-status event emitted");
-	t.is(logStub.callCount, 0, "console.log was never called");
+	t.is(logStub.callCount, 0, "_log was never called");
 });
 
 test.serial("Start project build", (t) => {
@@ -84,7 +84,7 @@ test.serial("Start project build", (t) => {
 
 	t.is(logHandler.callCount, 0, "No log event emitted");
 	t.is(metadataHandler.callCount, 1, "One build-metadata event emitted");
-	t.is(logStub.callCount, 0, "console.log was never called");
+	t.is(logStub.callCount, 0, "_log was never called");
 });
 
 test.serial("End project build", (t) => {
@@ -103,7 +103,7 @@ test.serial("End project build", (t) => {
 
 	t.is(logHandler.callCount, 0, "No log event emitted");
 	t.is(metadataHandler.callCount, 1, "One build-metadata event emitted");
-	t.is(logStub.callCount, 0, "console.log was never called");
+	t.is(logStub.callCount, 0, "_log was never called");
 });
 
 test.serial("Skip project build", (t) => {
@@ -122,7 +122,7 @@ test.serial("Skip project build", (t) => {
 
 	t.is(logHandler.callCount, 0, "No log event emitted");
 	t.is(metadataHandler.callCount, 1, "One build-metadata event emitted");
-	t.is(logStub.callCount, 0, "console.log was never called");
+	t.is(logStub.callCount, 0, "_log was never called");
 });
 
 test.serial("No event listener: Set projects", (t) => {
@@ -132,7 +132,7 @@ test.serial("No event listener: Set projects", (t) => {
 
 	t.is(logHandler.callCount, 0, "No log event emitted");
 	t.is(statusHandler.callCount, 0, "No build-status event emitted");
-	t.is(logStub.callCount, 0, "console.log was never called");
+	t.is(logStub.callCount, 0, "_log was never called");
 });
 
 test.serial("No event listener: Start project build", (t) => {
@@ -141,7 +141,7 @@ test.serial("No event listener: Start project build", (t) => {
 	buildLogger.setProjects(["project.a"]);
 
 	buildLogger.startProjectBuild("project.a", "project type");
-	t.is(logStub.callCount, 1, "console.log got called once");
+	t.is(logStub.callCount, 1, "_log got called once");
 	t.is(logStub.getCall(0).args[0], "info", "Logged with expected log-level");
 	t.is(logStub.getCall(0).args[1],
 		"Building project type project project.a...",
@@ -157,7 +157,7 @@ test.serial("No event listener: End project build", (t) => {
 	buildLogger.setProjects(["project.a"]);
 
 	buildLogger.endProjectBuild("project.a", "project type");
-	t.is(logStub.callCount, 1, "console.log got called once");
+	t.is(logStub.callCount, 1, "_log got called once");
 	t.is(logStub.getCall(0).args[0], "verbose", "Logged with expected log-level");
 	t.is(logStub.getCall(0).args[1],
 		"Finished building project type project project.a",
@@ -173,7 +173,7 @@ test.serial("No event listener: Skip project build", (t) => {
 	buildLogger.setProjects(["project.a"]);
 
 	buildLogger.skipProjectBuild("project.a", "project type");
-	t.is(logStub.callCount, 1, "console.log got called once");
+	t.is(logStub.callCount, 1, "_log got called once");
 	t.is(logStub.getCall(0).args[0], "info", "Logged with expected log-level");
 	t.is(logStub.getCall(0).args[1],
 		"Skipping build of project type project project.a",
