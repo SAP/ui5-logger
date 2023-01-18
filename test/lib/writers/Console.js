@@ -135,7 +135,7 @@ test.serial("Build status: Unknown project", (t) => {
 			status: "project-build-start",
 		});
 	}, {
-		message: "ConsoleWriter: Unknown project project.a"
+		message: "writers/Console: Unknown project project.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -162,7 +162,7 @@ test.serial("Build status (start): Duplicate project build start", (t) => {
 			status: "project-build-start",
 		});
 	}, {
-		message: "ConsoleWriter: Unexpected duplicate project-build-start event for project project.a"
+		message: "writers/Console: Unexpected duplicate project-build-start event for project project.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -197,7 +197,7 @@ test.serial("Build status (start): Project build already ended", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected project-build-start event for project project.a. Project build already ended"
+			"writers/Console: Unexpected project-build-start event for project project.a. Project build already ended"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -225,7 +225,7 @@ test.serial("Build status (start): Project build already skipped", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected project-build-start event for project project.a. " +
+			"writers/Console: Unexpected project-build-start event for project project.a. " +
 			"Project build already skipped"
 	});
 
@@ -260,7 +260,7 @@ test.serial("Build status (end): Duplicate project build end", (t) => {
 			status: "project-build-end",
 		});
 	}, {
-		message: "ConsoleWriter: Unexpected duplicate project-build-end event for project project.a"
+		message: "writers/Console: Unexpected duplicate project-build-end event for project project.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -281,7 +281,7 @@ test.serial("Build status (end): Project build not started", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected project-build-end event for project project.a. " +
+			"writers/Console: Unexpected project-build-end event for project project.a. " +
 			"No corresponding project-build-start event handled"
 	});
 
@@ -310,7 +310,7 @@ test.serial("Build status (end): Project build already skipped", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected project-build-end event for project project.a. " +
+			"writers/Console: Unexpected project-build-end event for project project.a. " +
 			"Project build already skipped"
 	});
 
@@ -338,7 +338,7 @@ test.serial("Build status (skip): Duplicate project build skip", (t) => {
 			status: "project-build-skip",
 		});
 	}, {
-		message: "ConsoleWriter: Unexpected duplicate project-build-skip event for project project.a"
+		message: "writers/Console: Unexpected duplicate project-build-skip event for project project.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -366,7 +366,7 @@ test.serial("Build status (skip): Project build already started", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected project-build-skip event for project project.a. " +
+			"writers/Console: Unexpected project-build-skip event for project project.a. " +
 			"Project build already started"
 	});
 
@@ -402,7 +402,7 @@ test.serial("Build status (skip): Project build already ended", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected project-build-skip event for project project.a. " +
+			"writers/Console: Unexpected project-build-skip event for project project.a. " +
 			"Project build already ended"
 	});
 
@@ -425,7 +425,7 @@ test.serial("Build status: Unknown status", (t) => {
 
 	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 	t.is(stripAnsi(stderrWriteStub.firstCall.firstArg),
-		`verb ConsoleWriter: Received unknown build-status foo for project project.a\n`,
+		`verb writers/Console: Received unknown build-status foo for project project.a\n`,
 		"Logged expected message");
 });
 
@@ -475,7 +475,7 @@ test.serial("ProjectBuild status: Unknown project", (t) => {
 			status: "task-end",
 		});
 	}, {
-		message: "ConsoleWriter: Unknown project project.a"
+		message: "writers/Console: Unknown project project.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -496,7 +496,7 @@ test.serial("ProjectBuild status: Unknown task", (t) => {
 			status: "task-end",
 		});
 	}, {
-		message: "ConsoleWriter: Unknown task task.a for project project.a"
+		message: "writers/Console: Unknown task task.a for project project.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -532,7 +532,7 @@ test.serial("ProjectBuild status (start): Duplicate task execution start", (t) =
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected duplicate task-start event for project project.a, task task.a"
+			"writers/Console: Unexpected duplicate task-start event for project project.a, task task.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -576,7 +576,7 @@ test.serial("ProjectBuild status (start): Task execution already ended", (t) => 
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected task-start event for project project.a, task task.a. " +
+			"writers/Console: Unexpected task-start event for project project.a, task task.a. " +
 			"Task execution already ended"
 	});
 
@@ -621,7 +621,7 @@ test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected duplicate task-end event for project project.a, task task.a"
+			"writers/Console: Unexpected duplicate task-end event for project project.a, task task.a"
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -649,7 +649,7 @@ test.serial("ProjectBuild status (end): Task execution not started", (t) => {
 		});
 	}, {
 		message:
-			"ConsoleWriter: Unexpected task-end event for project project.a, task task.a. " +
+			"writers/Console: Unexpected task-end event for project project.a, task task.a. " +
 			"No corresponding task-start event handled"
 	});
 
@@ -679,7 +679,7 @@ test.serial("ProjectBuild status: Unknown status", (t) => {
 
 	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 	t.is(stripAnsi(stderrWriteStub.firstCall.firstArg),
-		`verb ConsoleWriter: Received unknown project-build-status foo for project project.a\n`,
+		`verb writers/Console: Received unknown project-build-status foo for project project.a\n`,
 		"Logged expected message");
 });
 
