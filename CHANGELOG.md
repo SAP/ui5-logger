@@ -12,15 +12,18 @@ A list of unreleased changes can be found [here](https://github.com/SAP/ui5-logg
 
 ### Breaking Changes
 
+- Replace npmlog with @ui5/logger/Logger (#363) [`66a159a`](https://github.com/SAP/ui5-logger/commit/66a159acd9b67a27dd66d1e8056c362585f51bcf)
 - Deprecate advanced APIs in preparation of refactoring [`3aea5e7`](https://github.com/SAP/ui5-logger/commit/3aea5e766f9bda156e8c7e62a2e8c65f613ef7e9)
 - Transform to ES Modules ([#306](https://github.com/SAP/ui5-logger/issues/306)) [`c79608b`](https://github.com/SAP/ui5-logger/commit/c79608b0e432168ca8570530b63a456b9ddd12cb)
-- Require Node.js >= 16.13.2 / npm >= 8 [`a8af8a7`](https://github.com/SAP/ui5-logger/commit/a8af8a7a82c6f657ac10b5018e654939d90fd81f)
+- Require Node.js ^16.18.0, >=18.12.0 / npm >= 8 [`a8af8a7`](https://github.com/SAP/ui5-logger/commit/a8af8a7a82c6f657ac10b5018e654939d90fd81f)
 
 ### BREAKING CHANGE
 
-In preparation for a major refactoring of @ui5/logger, and as part of
-making its API public, this breaking change removes capabilities that
-are likely to change and should not be part of a public API.
+The @ui5/logger got refactored and as a result its API went public.
+
+Remove the usage of npmlog and refactor @ui5/logger modules to emit log events which are then caught in dedicated handlers. This is somewhat inspired by npm's proc-log module.
+
+This breaking change removes capabilities that are likely to change and should not be part of a public API.
 
 This will ensure that later changes to the module can be donen in a
 compatible manner.
@@ -39,7 +42,7 @@ Relevant changes:
   be re-added in a later release.
 
 This package has been transformed to ES Modules. Therefore it no longer provides a CommonJS export.
-If your project uses CommonJS, it needs to be converted to ESM or use a dynamic import.
+If your project uses CommonJS, it needs to be converted to ES Modules or use a dynamic import.
 
 For more information see also:
 
@@ -47,15 +50,12 @@ For more information see also:
 - https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
 Support for older Node.js and npm releases has been dropped.
-Only Node.js v16.18.0 and npm v8 or higher are supported.
+Only Node.js versions v16.18.0, v18.12.0 or higher as well as npm v8 or higher are supported.
 
 ### Features
 
 - Add new log level "perf" [`acf0c71`](https://github.com/SAP/ui5-logger/commit/acf0c717612f440ea7a114e757c05d358ae523a7)
 
-### Dependency Updates
-
-- Bump npmlog from 5.0.1 to 7.0.1 ([#321](https://github.com/SAP/ui5-logger/issues/321)) [`6c5c154`](https://github.com/SAP/ui5-logger/commit/6c5c154c53d8f81774d588714e8426922fa85271)
 
 <a name="v2.0.1"></a>
 ## [v2.0.1] - 2020-10-22
