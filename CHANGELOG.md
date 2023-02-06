@@ -4,9 +4,6 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 A list of unreleased changes can be found [here](https://github.com/SAP/ui5-logger/compare/v3.0.1-rc.3...HEAD).
 
-<a name="v3.0.1-rc.3"></a>
-## [v3.0.1-rc.3] - 2023-02-02
-
 <a name="v3.0.0"></a>
 ## [v3.0.0] - 2023-02-XX
 
