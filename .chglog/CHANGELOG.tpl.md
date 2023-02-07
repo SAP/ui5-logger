@@ -33,16 +33,6 @@ A list of unreleased changes can be found [here]({{ .Info.RepositoryURL }}/compa
 {{ end -}}
 {{ end -}}
 
-{{- if .Versions }}
-{{ range .Versions -}}
-{{ if .Tag.Previous -}}
-[{{ .Tag.Name }}]: {{ $.Info.RepositoryURL }}/compare/{{ .Tag.Previous.Name }}...{{ .Tag.Name }}
-{{ end -}}
-{{ end -}}
-{{ end -}}
-
-<a name="v3.0.0"></a>
-## [v3.0.0] - 2023-02-XX
 
 ### Breaking Changes
 
@@ -134,19 +124,14 @@ Only Node.js v10 or higher is supported.
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-06-06
 
-[v3.0.1-rc.3]: https://github.com/SAP/ui5-logger/compare/v3.0.1-rc.2...v3.0.1-rc.3
-[v3.0.1-rc.2]: https://github.com/SAP/ui5-logger/compare/v3.0.1-rc.1...v3.0.1-rc.2
-[v3.0.1-rc.1]: https://github.com/SAP/ui5-logger/compare/v3.0.1-rc.0...v3.0.1-rc.1
-[v3.0.1-rc.0]: https://github.com/SAP/ui5-logger/compare/v3.0.1-beta.1...v3.0.1-rc.0
-[v3.0.1-beta.1]: https://github.com/SAP/ui5-logger/compare/v3.0.1-beta.0...v3.0.1-beta.1
-[v3.0.1-beta.0]: https://github.com/SAP/ui5-logger/compare/v3.0.1-alpha.3...v3.0.1-beta.0
-[v3.0.1-alpha.3]: https://github.com/SAP/ui5-logger/compare/v3.0.1-alpha.2...v3.0.1-alpha.3
-[v3.0.1-alpha.2]: https://github.com/SAP/ui5-logger/compare/v3.0.1-alpha.1...v3.0.1-alpha.2
-[v3.0.1-alpha.1]: https://github.com/SAP/ui5-logger/compare/v3.0.1-alpha.0...v3.0.1-alpha.1
-[v3.0.1-alpha.0]: https://github.com/SAP/ui5-logger/compare/v3.0.0-next.0...v3.0.1-alpha.0
-[v3.0.0-next.0]: https://github.com/SAP/ui5-logger/compare/v3.0.0-beta.1...v3.0.0-next.0
-[v3.0.0-beta.1]: https://github.com/SAP/ui5-logger/compare/v3.0.0-alpha.0...v3.0.0-beta.1
-[v3.0.0-alpha.0]: https://github.com/SAP/ui5-logger/compare/v2.0.1...v3.0.0-alpha.0
+{{- if .Versions }}
+{{ range .Versions -}}
+{{ if .Tag.Previous -}}
+[{{ .Tag.Name }}]: {{ $.Info.RepositoryURL }}/compare/{{ .Tag.Previous.Name }}...{{ .Tag.Name }}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+[v3.0.0]: https://github.com/SAP/ui5-logger/compare/v2.0.1...v3.0.0
 [v2.0.1]: https://github.com/SAP/ui5-logger/compare/v2.0.0...v2.0.1
 [v2.0.0]: https://github.com/SAP/ui5-logger/compare/v1.0.2...v2.0.0
 [v1.0.2]: https://github.com/SAP/ui5-logger/compare/v1.0.1...v1.0.2
