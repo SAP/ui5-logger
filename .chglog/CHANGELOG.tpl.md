@@ -126,7 +126,7 @@ Only Node.js v10 or higher is supported.
 
 {{- if .Versions }}
 {{ range .Versions -}}
-{{ if .Tag.Previous -}}
+{{ if and .Tag.Previous (ne .Tag.Name "v3.0.0") -}}
 [{{ .Tag.Name }}]: {{ $.Info.RepositoryURL }}/compare/{{ .Tag.Previous.Name }}...{{ .Tag.Name }}
 {{ end -}}
 {{ end -}}
