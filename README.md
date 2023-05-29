@@ -8,6 +8,12 @@
 [![Build Status](https://dev.azure.com/sap/opensource/_apis/build/status/SAP.ui5-logger?branchName=master)](https://dev.azure.com/sap/opensource/_build/latest?definitionId=37&branchName=master)
 [![npm Package Version](https://badge.fury.io/js/%40ui5%2Flogger.svg)](https://www.npmjs.com/package/@ui5/logger)
 
+> [UI5 Tooling v3](https://sap.github.io/ui5-tooling/v3) is the latest and stable version 🎉
+>
+> [UI5 Tooling v2](https://sap.github.io/ui5-tooling/v2) has been deprecated 🚫  
+>
+> Please migrate your projects to [UI5 Tooling v3](https://sap.github.io/ui5-tooling/v3/updates/migrate-v3/)!
+
 ## Documentation
 General documentation can of the UI5 Tooling can be found here: [sap.github.io/ui5-tooling](https://sap.github.io/ui5-tooling/)
 
