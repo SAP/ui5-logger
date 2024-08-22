@@ -54,7 +54,7 @@ test.serial("isLevelEnabled", (t) => {
 	t.throws(() => {
 		Logger.isLevelEnabled("warn");
 	}, {message: `UI5 Logger: Environment variable UI5_LOG_LVL is set to an unknown log level "unknown level". ` +
-			`Valid levels are silly, verbose, perf, info, warn, error, silent`});
+	`Valid levels are silly, verbose, perf, info, warn, error, silent`});
 });
 
 test.serial("Correct log event name", (t) => {
@@ -84,7 +84,7 @@ test.serial("Missing parameter: module name", (t) => {
 	t.throws(() => {
 		new Logger();
 	}, {
-		message: "Logger: Missing moduleName parameter"
+		message: "Logger: Missing moduleName parameter",
 	}, "Threw with expected error message");
 });
 
@@ -105,7 +105,7 @@ test.serial("Illegal module names", (t) => {
 		t.throws(() => {
 			new Logger(moduleName);
 		}, {
-			message: `Logger: Invalid module name: ${moduleName}`
+			message: `Logger: Invalid module name: ${moduleName}`,
 		}, "Threw with expected error message");
 	}
 	testThrows("module name");
@@ -148,11 +148,11 @@ test.serial("Log object", (t) => {
 			is: {
 				a: {
 					deep: [
-						"object"
-					]
-				}
-			}
-		}
+						"object",
+					],
+				},
+			},
+		},
 	});
 	t.is(logHandler.callCount, 1, "Emitted and captured one log event");
 	t.deepEqual(logHandler.getCall(0).args[0], {
@@ -190,7 +190,6 @@ test.serial("Log multiple arguments", (t) => {
 	const {logHandler} = t.context;
 	const myLogger = new Logger("my:module:name");
 
-	// eslint-disable-next-line no-new-wrappers
 	myLogger.info("This", new String("is"), "a", ["test"]);
 	t.is(logHandler.callCount, 1, "Emitted and captured one log event");
 	t.deepEqual(logHandler.getCall(0).args[0], {

@@ -231,7 +231,7 @@ Logger.LOG_LEVELS.forEach((logLevel) => {
 		// This level is to suppress any logging. Hence we do not provide a dedicated log-function
 		return;
 	}
-	Logger.prototype[logLevel] = function(...args) {
+	Logger.prototype[logLevel] = function (...args) {
 		const message = args.map(Logger._formatMessage).join(" ");
 		this._emitOrLog(logLevel, message);
 	};

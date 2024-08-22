@@ -35,7 +35,7 @@ async function findMessageInProgressBarLog(t, indicator) {
 	const call = allWriteCalls.find((call) => {
 		return call.firstArg.includes(indicator);
 	});
-	return call && call.firstArg;
+	return call?.firstArg;
 }
 
 test.serial("Log standard messages", (t) => {
@@ -129,7 +129,7 @@ test.serial("Log ProjectBuild messages", (t) => {
 	const myLogger = new ProjectBuildLogger({
 		moduleName: "project:build",
 		projectName: "project.name",
-		projectType: "project-type"
+		projectType: "project-type",
 	});
 
 	ProjectBuildLogger.LOG_LEVELS.forEach((level) => {
@@ -159,7 +159,7 @@ test.serial("Log ProjectBuild status", (t) => {
 	const myLogger = new ProjectBuildLogger({
 		moduleName: "build:module",
 		projectName: "project.a",
-		projectType: "project-type"
+		projectType: "project-type",
 	});
 
 	myLogger.setTasks(["task.a", "task.b"]);
@@ -193,7 +193,7 @@ test.serial("ProjectBuild status restricted by log level", (t) => {
 	const myLogger = new ProjectBuildLogger({
 		moduleName: "build:module",
 		projectName: "project.a",
-		projectType: "project-type"
+		projectType: "project-type",
 	});
 
 	process.env.UI5_LOG_LVL = "silent";
