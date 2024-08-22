@@ -201,79 +201,79 @@ class Console {
 
 		let message;
 		switch (status) {
-		case "project-build-start":
-			if (projectMetadata.buildEnded) {
-				throw new Error(
-					`writers/Console: Unexpected project-build-start event for project ${projectName}. ` +
-					`Project build already ended`);
-			}
-			if (projectMetadata.buildStarted) {
-				throw new Error(
-					`writers/Console: Unexpected duplicate project-build-start event for project ${projectName}`);
-			}
-			if (projectMetadata.buildSkipped) {
-				throw new Error(
-					`writers/Console: Unexpected project-build-start event for project ${projectName}. ` +
-					`Project build already skipped`);
-			}
-			projectMetadata.buildStarted = true;
-			message = `${chalk.blue(figures.pointer)} ` +
+			case "project-build-start":
+				if (projectMetadata.buildEnded) {
+					throw new Error(
+						`writers/Console: Unexpected project-build-start event for project ${projectName}. ` +
+						`Project build already ended`);
+				}
+				if (projectMetadata.buildStarted) {
+					throw new Error(
+						`writers/Console: Unexpected duplicate project-build-start event for project ${projectName}`);
+				}
+				if (projectMetadata.buildSkipped) {
+					throw new Error(
+						`writers/Console: Unexpected project-build-start event for project ${projectName}. ` +
+						`Project build already skipped`);
+				}
+				projectMetadata.buildStarted = true;
+				message = `${chalk.blue(figures.pointer)} ` +
 				`Building ${projectType} project ${chalk.bold(projectName)}...`;
 
-			// Update progress bar message with current project
-			this._getProgressBar()?.update({
-				message: `${figures.pointer} Building ${projectType} project ${projectName}...`
-			});
-			break;
-		case "project-build-end":
-			if (projectMetadata.buildEnded) {
-				throw new Error(
-					`writers/Console: Unexpected duplicate project-build-end event for project ${projectName}`);
-			}
-			if (projectMetadata.buildSkipped) {
-				throw new Error(
-					`writers/Console: Unexpected project-build-end event for project ${projectName}. ` +
-					`Project build already skipped`);
-			}
-			if (!projectMetadata.buildStarted) {
-				throw new Error(
-					`writers/Console: Unexpected project-build-end event for project ${projectName}. ` +
-					`No corresponding project-build-start event handled`);
-			}
-			projectMetadata.buildEnded = true;
-			message = `${chalk.green(figures.tick)} ` +
+				// Update progress bar message with current project
+				this._getProgressBar()?.update({
+					message: `${figures.pointer} Building ${projectType} project ${projectName}...`,
+				});
+				break;
+			case "project-build-end":
+				if (projectMetadata.buildEnded) {
+					throw new Error(
+						`writers/Console: Unexpected duplicate project-build-end event for project ${projectName}`);
+				}
+				if (projectMetadata.buildSkipped) {
+					throw new Error(
+						`writers/Console: Unexpected project-build-end event for project ${projectName}. ` +
+						`Project build already skipped`);
+				}
+				if (!projectMetadata.buildStarted) {
+					throw new Error(
+						`writers/Console: Unexpected project-build-end event for project ${projectName}. ` +
+						`No corresponding project-build-start event handled`);
+				}
+				projectMetadata.buildEnded = true;
+				message = `${chalk.green(figures.tick)} ` +
 				`Finished building ${projectType} project ${chalk.bold(projectName)}`;
 
-			// Update progress bar (if used)
-			this._getProgressBar()?.increment(this.#progressProjectWeight);
-			break;
-		case "project-build-skip":
-			if (projectMetadata.buildSkipped) {
-				throw new Error(
-					`writers/Console: Unexpected duplicate project-build-skip event for project ${projectName}`);
-			}
-			if (projectMetadata.buildEnded) {
-				throw new Error(
-					`writers/Console: Unexpected project-build-skip event for project ${projectName}. ` +
-					`Project build already ended`);
-			}
-			if (projectMetadata.buildStarted) {
-				throw new Error(
-					`writers/Console: Unexpected project-build-skip event for project ${projectName}. ` +
-					`Project build already started`);
-			}
-			projectMetadata.buildSkipped = true;
-			message = `${chalk.yellow(figures.tick)} ` +
+				// Update progress bar (if used)
+				this._getProgressBar()?.increment(this.#progressProjectWeight);
+				break;
+			case "project-build-skip":
+				if (projectMetadata.buildSkipped) {
+					throw new Error(
+						`writers/Console: Unexpected duplicate project-build-skip event for project ${projectName}`);
+				}
+				if (projectMetadata.buildEnded) {
+					throw new Error(
+						`writers/Console: Unexpected project-build-skip event for project ${projectName}. ` +
+						`Project build already ended`);
+				}
+				if (projectMetadata.buildStarted) {
+					throw new Error(
+						`writers/Console: Unexpected project-build-skip event for project ${projectName}. ` +
+						`Project build already started`);
+				}
+				projectMetadata.buildSkipped = true;
+				message = `${chalk.yellow(figures.tick)} ` +
 				`Skipping build of ${projectType} project ${chalk.bold(projectName)}`;
 
-			// Update progress bar (if used)
-			// All tasks of this projects are completed
-			this._getProgressBar()?.increment(this.#progressProjectWeight + projectMetadata.projectTasks.size);
-			break;
-		default:
-			this.#writeMessage("verbose",
-				`writers/Console: Received unknown build-status ${status} for project ${projectName}`);
-			return;
+				// Update progress bar (if used)
+				// All tasks of this projects are completed
+				this._getProgressBar()?.increment(this.#progressProjectWeight + projectMetadata.projectTasks.size);
+				break;
+			default:
+				this.#writeMessage("verbose",
+					`writers/Console: Received unknown build-status ${status} for project ${projectName}`);
+				return;
 		}
 
 		this.#writeMessage(level, `${chalk.grey(buildIndex)}: ${message}`);
@@ -301,39 +301,39 @@ class Console {
 
 		let message;
 		switch (status) {
-		case "task-start":
-			if (taskMetadata.executionEnded) {
-				throw new Error(
-					`writers/Console: Unexpected task-start event for project ${projectName}, task ${taskName}. ` +
-					`Task execution already ended`);
-			}
-			if (taskMetadata.executionStarted) {
-				throw new Error(`writers/Console: Unexpected duplicate task-start event ` +
-					`for project ${projectName}, task ${taskName}`);
-			}
-			taskMetadata.executionStarted = true;
-			message = `${chalk.blue(figures.pointerSmall)} Running task ${chalk.bold(taskName)}...`;
-			break;
-		case "task-end":
-			if (taskMetadata.executionEnded) {
-				throw new Error(`writers/Console: ` +
-					`Unexpected duplicate task-end event for project ${projectName}, task ${taskName}`);
-			}
-			if (!taskMetadata.executionStarted) {
-				throw new Error(
-					`writers/Console: Unexpected task-end event for project ${projectName}, task ${taskName}. ` +
-					`No corresponding task-start event handled`);
-			}
-			taskMetadata.executionEnded = true;
-			message = `${chalk.green(figures.tick)} Finished task ${chalk.bold(taskName)}`;
+			case "task-start":
+				if (taskMetadata.executionEnded) {
+					throw new Error(
+						`writers/Console: Unexpected task-start event for project ${projectName}, task ${taskName}. ` +
+						`Task execution already ended`);
+				}
+				if (taskMetadata.executionStarted) {
+					throw new Error(`writers/Console: Unexpected duplicate task-start event ` +
+						`for project ${projectName}, task ${taskName}`);
+				}
+				taskMetadata.executionStarted = true;
+				message = `${chalk.blue(figures.pointerSmall)} Running task ${chalk.bold(taskName)}...`;
+				break;
+			case "task-end":
+				if (taskMetadata.executionEnded) {
+					throw new Error(`writers/Console: ` +
+						`Unexpected duplicate task-end event for project ${projectName}, task ${taskName}`);
+				}
+				if (!taskMetadata.executionStarted) {
+					throw new Error(
+						`writers/Console: Unexpected task-end event for project ${projectName}, task ${taskName}. ` +
+						`No corresponding task-start event handled`);
+				}
+				taskMetadata.executionEnded = true;
+				message = `${chalk.green(figures.tick)} Finished task ${chalk.bold(taskName)}`;
 
-			// Update progress bar (if used)
-			this._getProgressBar()?.increment(1);
-			break;
-		default:
-			this.#writeMessage("verbose",
-				`writers/Console: Received unknown project-build-status ${status} for project ${projectName}`);
-			return;
+				// Update progress bar (if used)
+				this._getProgressBar()?.increment(1);
+				break;
+			default:
+				this.#writeMessage("verbose",
+					`writers/Console: Received unknown project-build-status ${status} for project ${projectName}`);
+				return;
 		}
 
 		this.#writeMessage(level, `${chalk.blue(`${(projectName)}`)} ${taskIndex}${message}`);
@@ -341,21 +341,21 @@ class Console {
 
 	#getLevelPrefix(level) {
 		switch (level) {
-		case "silly":
-			return chalk.inverse(level);
-		case "verbose":
-			return chalk.cyan("verb");
-		case "perf":
-			return chalk.bgYellow.red(level);
-		case "info":
-			return chalk.green(level);
-		case "warn":
-			return chalk.yellow(level);
-		case "error":
-			return chalk.bgRed.white(level);
-		// Log level silent does not produce messages
-		default:
-			return level;
+			case "silly":
+				return chalk.inverse(level);
+			case "verbose":
+				return chalk.cyan("verb");
+			case "perf":
+				return chalk.bgYellow.red(level);
+			case "info":
+				return chalk.green(level);
+			case "warn":
+				return chalk.yellow(level);
+			case "error":
+				return chalk.bgRed.white(level);
+				// Log level silent does not produce messages
+			default:
+				return level;
 		}
 	}
 

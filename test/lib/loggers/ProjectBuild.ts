@@ -41,7 +41,7 @@ test.serial("Missing parameters", (t) => {
 	t.throws(() => {
 		new ProjectBuildLogger({});
 	}, {
-		message: "Logger: Missing moduleName parameter"
+		message: "Logger: Missing moduleName parameter",
 	}, "Threw with expected error message");
 
 	t.throws(() => {
@@ -50,7 +50,7 @@ test.serial("Missing parameters", (t) => {
 			projectName: "projectName",
 		});
 	}, {
-		message: "loggers/ProjectBuild: Missing projectType parameter"
+		message: "loggers/ProjectBuild: Missing projectType parameter",
 	}, "Threw with expected error message");
 
 	t.throws(() => {
@@ -59,7 +59,7 @@ test.serial("Missing parameters", (t) => {
 			projectType: "projectType",
 		});
 	}, {
-		message: "loggers/ProjectBuild: Missing projectName parameter"
+		message: "loggers/ProjectBuild: Missing projectName parameter",
 	}, "Threw with expected error message");
 });
 
@@ -94,7 +94,7 @@ test.serial("Set tasks", (t) => {
 	t.deepEqual(metadataHandler.getCall(0).args[0], {
 		projectName: "projectName",
 		projectType: "projectType",
-		tasksToRun: ["task.a", "task.b"]
+		tasksToRun: ["task.a", "task.b"],
 	}, "Metadata event has expected payload");
 
 	t.is(logHandler.callCount, 0, "No log event emitted");
@@ -180,13 +180,13 @@ test.serial("Set tasks: Missing parameter", (t) => {
 	t.throws(() => {
 		projectBuildLogger.setTasks();
 	}, {
-		message: `loggers/ProjectBuild#setTasks: Missing or incorrect tasks parameter`
+		message: `loggers/ProjectBuild#setTasks: Missing or incorrect tasks parameter`,
 	}, "Threw with expected error message");
 
 	t.throws(() => {
 		projectBuildLogger.setTasks(new Set("no array"));
 	}, {
-		message: `loggers/ProjectBuild#setTasks: Missing or incorrect tasks parameter`
+		message: `loggers/ProjectBuild#setTasks: Missing or incorrect tasks parameter`,
 	}, "Threw with expected error message");
 });
 
@@ -197,7 +197,7 @@ test.serial("Start task: Unknown task", (t) => {
 	t.throws(() => {
 		projectBuildLogger.startTask("task.x");
 	}, {
-		message: `loggers/ProjectBuild#startTask: Unknown task task.x`
+		message: `loggers/ProjectBuild#startTask: Unknown task task.x`,
 	}, "Threw with expected error message");
 
 	projectBuildLogger.setTasks(["task.a"]);
@@ -205,7 +205,7 @@ test.serial("Start task: Unknown task", (t) => {
 	t.throws(() => {
 		projectBuildLogger.startTask("task.x");
 	}, {
-		message: `loggers/ProjectBuild#startTask: Unknown task task.x`
+		message: `loggers/ProjectBuild#startTask: Unknown task task.x`,
 	}, "Threw with expected error message");
 });
 
@@ -216,7 +216,7 @@ test.serial("End task: Unknown task", (t) => {
 	t.throws(() => {
 		projectBuildLogger.endTask("task.x");
 	}, {
-		message: `loggers/ProjectBuild#endTask: Unknown task task.x`
+		message: `loggers/ProjectBuild#endTask: Unknown task task.x`,
 	}, "Threw with expected error message");
 
 	projectBuildLogger.setTasks(["task.a"]);
@@ -224,7 +224,6 @@ test.serial("End task: Unknown task", (t) => {
 	t.throws(() => {
 		projectBuildLogger.endTask("task.x");
 	}, {
-		message: `loggers/ProjectBuild#endTask: Unknown task task.x`
+		message: `loggers/ProjectBuild#endTask: Unknown task task.x`,
 	}, "Threw with expected error message");
 });
-

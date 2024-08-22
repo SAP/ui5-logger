@@ -42,4 +42,3 @@ test("check number of exports", (t) => {
 		t.is(actual, expected, "Correct module exported");
 	});
 });
-

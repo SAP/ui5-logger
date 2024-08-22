@@ -24,7 +24,7 @@ test.serial("Log event", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 1, "Logged one message");
@@ -42,7 +42,7 @@ test.serial("Enable", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged no message after creation");
@@ -52,7 +52,7 @@ test.serial("Enable", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 1, "Logged one message after being enabled");
@@ -65,7 +65,7 @@ test.serial("Disable", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged no message");
@@ -78,7 +78,7 @@ test.serial("Disable + Enable", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged no message");
@@ -87,7 +87,7 @@ test.serial("Disable + Enable", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 1, "Logged no message");
@@ -103,7 +103,7 @@ test.serial("Stop", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged no message");
@@ -118,7 +118,7 @@ test.serial("Stop disables all instances", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 3, "Logged three message");
@@ -129,7 +129,7 @@ test.serial("Stop disables all instances", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged no message");
@@ -141,7 +141,7 @@ test.serial("Logging restricted by log level setting", (t) => {
 	process.emit("ui5.log", {
 		level: "verbose",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged no message");
@@ -154,10 +154,10 @@ test.serial("Logging with unknown log level", (t) => {
 		process.emit("ui5.log", {
 			level: "foo",
 			message: "Message 1",
-			moduleName: "my:module"
+			moduleName: "my:module",
 		});
 	}, {
-		message: `Unknown log level "foo"`
+		message: `Unknown log level "foo"`,
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged no message");
@@ -166,7 +166,7 @@ test.serial("Logging with unknown log level", (t) => {
 test.serial("Build status events", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -200,7 +200,7 @@ test.serial("Build status: Unknown project", (t) => {
 			status: "project-build-start",
 		});
 	}, {
-		message: "writers/Console: Unknown project project.a"
+		message: "writers/Console: Unknown project project.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -209,7 +209,7 @@ test.serial("Build status: Unknown project", (t) => {
 test.serial("Build status (start): Duplicate project build start", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -227,7 +227,7 @@ test.serial("Build status (start): Duplicate project build start", (t) => {
 			status: "project-build-start",
 		});
 	}, {
-		message: "writers/Console: Unexpected duplicate project-build-start event for project project.a"
+		message: "writers/Console: Unexpected duplicate project-build-start event for project project.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -236,7 +236,7 @@ test.serial("Build status (start): Duplicate project build start", (t) => {
 test.serial("Build status (start): Project build already ended", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -262,7 +262,7 @@ test.serial("Build status (start): Project build already ended", (t) => {
 		});
 	}, {
 		message:
-			"writers/Console: Unexpected project-build-start event for project project.a. Project build already ended"
+			"writers/Console: Unexpected project-build-start event for project project.a. Project build already ended",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -271,7 +271,7 @@ test.serial("Build status (start): Project build already ended", (t) => {
 test.serial("Build status (start): Project build already skipped", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -291,7 +291,7 @@ test.serial("Build status (start): Project build already skipped", (t) => {
 	}, {
 		message:
 			"writers/Console: Unexpected project-build-start event for project project.a. " +
-			"Project build already skipped"
+			"Project build already skipped",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -300,7 +300,7 @@ test.serial("Build status (start): Project build already skipped", (t) => {
 test.serial("Build status (end): Duplicate project build end", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -325,7 +325,7 @@ test.serial("Build status (end): Duplicate project build end", (t) => {
 			status: "project-build-end",
 		});
 	}, {
-		message: "writers/Console: Unexpected duplicate project-build-end event for project project.a"
+		message: "writers/Console: Unexpected duplicate project-build-end event for project project.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -334,7 +334,7 @@ test.serial("Build status (end): Duplicate project build end", (t) => {
 test.serial("Build status (end): Project build not started", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	t.throws(() => {
@@ -347,7 +347,7 @@ test.serial("Build status (end): Project build not started", (t) => {
 	}, {
 		message:
 			"writers/Console: Unexpected project-build-end event for project project.a. " +
-			"No corresponding project-build-start event handled"
+			"No corresponding project-build-start event handled",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -356,7 +356,7 @@ test.serial("Build status (end): Project build not started", (t) => {
 test.serial("Build status (end): Project build already skipped", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -376,7 +376,7 @@ test.serial("Build status (end): Project build already skipped", (t) => {
 	}, {
 		message:
 			"writers/Console: Unexpected project-build-end event for project project.a. " +
-			"Project build already skipped"
+			"Project build already skipped",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -385,7 +385,7 @@ test.serial("Build status (end): Project build already skipped", (t) => {
 test.serial("Build status (skip): Duplicate project build skip", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -403,7 +403,7 @@ test.serial("Build status (skip): Duplicate project build skip", (t) => {
 			status: "project-build-skip",
 		});
 	}, {
-		message: "writers/Console: Unexpected duplicate project-build-skip event for project project.a"
+		message: "writers/Console: Unexpected duplicate project-build-skip event for project project.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -412,7 +412,7 @@ test.serial("Build status (skip): Duplicate project build skip", (t) => {
 test.serial("Build status (skip): Project build already started", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -432,7 +432,7 @@ test.serial("Build status (skip): Project build already started", (t) => {
 	}, {
 		message:
 			"writers/Console: Unexpected project-build-skip event for project project.a. " +
-			"Project build already started"
+			"Project build already started",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -441,7 +441,7 @@ test.serial("Build status (skip): Project build already started", (t) => {
 test.serial("Build status (skip): Project build already ended", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.build-status", {
@@ -468,7 +468,7 @@ test.serial("Build status (skip): Project build already ended", (t) => {
 	}, {
 		message:
 			"writers/Console: Unexpected project-build-skip event for project project.a. " +
-			"Project build already ended"
+			"Project build already ended",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -477,7 +477,7 @@ test.serial("Build status (skip): Project build already ended", (t) => {
 test.serial("Build status: Unknown status", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.env.UI5_LOG_LVL = "verbose";
@@ -497,13 +497,13 @@ test.serial("Build status: Unknown status", (t) => {
 test.serial("ProjectBuild status events", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
-		tasksToRun: ["task.a"]
+		tasksToRun: ["task.a"],
 	});
 
 	process.emit("ui5.project-build-status", {
@@ -540,7 +540,7 @@ test.serial("ProjectBuild status: Unknown project", (t) => {
 			status: "task-end",
 		});
 	}, {
-		message: "writers/Console: Unknown project project.a"
+		message: "writers/Console: Unknown project project.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -549,7 +549,7 @@ test.serial("ProjectBuild status: Unknown project", (t) => {
 test.serial("ProjectBuild status: Unknown task", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	t.throws(() => {
@@ -561,7 +561,7 @@ test.serial("ProjectBuild status: Unknown task", (t) => {
 			status: "task-end",
 		});
 	}, {
-		message: "writers/Console: Unknown task task.a for project project.a"
+		message: "writers/Console: Unknown task task.a for project project.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -570,13 +570,13 @@ test.serial("ProjectBuild status: Unknown task", (t) => {
 test.serial("ProjectBuild status (start): Duplicate task execution start", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
-		tasksToRun: ["task.a"]
+		tasksToRun: ["task.a"],
 	});
 
 	process.emit("ui5.project-build-status", {
@@ -597,7 +597,7 @@ test.serial("ProjectBuild status (start): Duplicate task execution start", (t) =
 		});
 	}, {
 		message:
-			"writers/Console: Unexpected duplicate task-start event for project project.a, task task.a"
+			"writers/Console: Unexpected duplicate task-start event for project project.a, task task.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -606,13 +606,13 @@ test.serial("ProjectBuild status (start): Duplicate task execution start", (t) =
 test.serial("ProjectBuild status (start): Task execution already ended", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
-		tasksToRun: ["task.a"]
+		tasksToRun: ["task.a"],
 	});
 
 	process.emit("ui5.project-build-status", {
@@ -642,7 +642,7 @@ test.serial("ProjectBuild status (start): Task execution already ended", (t) => 
 	}, {
 		message:
 			"writers/Console: Unexpected task-start event for project project.a, task task.a. " +
-			"Task execution already ended"
+			"Task execution already ended",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -651,13 +651,13 @@ test.serial("ProjectBuild status (start): Task execution already ended", (t) => 
 test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
-		tasksToRun: ["task.a"]
+		tasksToRun: ["task.a"],
 	});
 
 	process.emit("ui5.project-build-status", {
@@ -686,7 +686,7 @@ test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 		});
 	}, {
 		message:
-			"writers/Console: Unexpected duplicate task-end event for project project.a, task task.a"
+			"writers/Console: Unexpected duplicate task-end event for project project.a, task task.a",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -695,13 +695,13 @@ test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 test.serial("ProjectBuild status (end): Task execution not started", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
-		tasksToRun: ["task.a"]
+		tasksToRun: ["task.a"],
 	});
 
 	t.throws(() => {
@@ -715,7 +715,7 @@ test.serial("ProjectBuild status (end): Task execution not started", (t) => {
 	}, {
 		message:
 			"writers/Console: Unexpected task-end event for project project.a, task task.a. " +
-			"No corresponding task-start event handled"
+			"No corresponding task-start event handled",
 	});
 
 	t.is(stderrWriteStub.callCount, 0, "Logged zero messages");
@@ -724,13 +724,13 @@ test.serial("ProjectBuild status (end): Task execution not started", (t) => {
 test.serial("ProjectBuild status: Unknown status", (t) => {
 	const {stderrWriteStub} = t.context;
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	process.emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
-		tasksToRun: ["task.a"]
+		tasksToRun: ["task.a"],
 	});
 
 	process.env.UI5_LOG_LVL = "verbose";
@@ -772,7 +772,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 	process.stderr.isTTY = true;
 
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	const pb = consoleWriter._getProgressBar();
@@ -782,7 +782,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	// Complete all progress
@@ -796,7 +796,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.false(pb.isActive, "Progress bar is not active anymore");
@@ -809,7 +809,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 3",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	const allWriteCalls = stderrWriteStub.getCalls();
@@ -847,7 +847,7 @@ test.serial("Disable: Stops progress bar", (t) => {
 	process.stderr.isTTY = true;
 
 	process.emit("ui5.build-metadata", {
-		projectsToBuild: ["project.a"]
+		projectsToBuild: ["project.a"],
 	});
 
 	const pb = consoleWriter._getProgressBar();
@@ -864,9 +864,8 @@ test.serial("Disable: Stops progress bar", (t) => {
 	process.emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
-		moduleName: "my:module"
+		moduleName: "my:module",
 	});
 
 	t.is(stderrWriteStub.callCount, 1, "Logged one message");
 });
-
