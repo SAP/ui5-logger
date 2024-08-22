@@ -2,7 +2,7 @@ import test from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
 import figures from "figures";
-import ConsoleWriter from "../../../lib/writers/Console.js";
+import ConsoleWriter from "../../../src/writers/Console.js";
 
 test.serial.beforeEach((t) => {
 	t.context.consoleWriter = ConsoleWriter.init();
