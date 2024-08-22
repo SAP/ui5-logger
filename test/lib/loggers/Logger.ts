@@ -1,6 +1,6 @@
 import test from "ava";
 import sinon from "sinon";
-import Logger from "../../../lib/loggers/Logger.js";
+import Logger from "../../../src/loggers/Logger.js";
 
 test.serial.beforeEach((t) => {
 	t.context.logHandler = sinon.stub();

@@ -1,6 +1,6 @@
 import test from "ava";
 import sinon from "sinon";
-import ProjectBuildLogger from "../../../lib/loggers/ProjectBuild.js";
+import ProjectBuildLogger from "../../../src/loggers/ProjectBuild.js";
 
 test.serial.beforeEach((t) => {
 	t.context.projectBuildLogger = new ProjectBuildLogger({
