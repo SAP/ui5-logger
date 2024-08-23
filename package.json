@@ -75,6 +75,7 @@
 		"@istanbuljs/esm-loader-hook": "^0.2.0",
 		"@istanbuljs/nyc-config-typescript": "^1.0.2",
 		"@stylistic/eslint-plugin": "^2.6.4",
+		"@types/cli-progress": "^3.11.6",
 		"@types/node": "^20.11.0",
 		"@types/sinon": "^17.0.3",
 		"ava": "^6.1.3",

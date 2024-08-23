@@ -4,6 +4,15 @@ import {inspect} from "node:util";
 // Module name must not contain any other characters than alphanumerical and some specials
 const rIllegalModuleNameChars = /[^0-9a-zA-Z-_:@./]/i;
 
+export type LogLevel = typeof Logger.LOG_LEVELS[number];
+export type LoggerPayload = object;
+
+export interface LogEvent extends LoggerPayload {
+	level: LogLevel;
+	message: string;
+	moduleName: string;
+};
+
 /**
  * Standard logging module for UI5 Tooling and extensions.
  * <br><br>
@@ -37,7 +46,7 @@ class Logger {
 	 * @member {string[]}
 	 * @public
 	*/
-	static LOG_LEVELS = ["silly", "verbose", "perf", "info", "warn", "error", "silent"];
+	static LOG_LEVELS = ["silly", "verbose", "perf", "info", "warn", "error", "silent"] as const;
 
 	/**
 	 * Event name used for emitting new log-message event on the
@@ -57,7 +66,7 @@ class Logger {
 	 * @public
 	 * @param {string} levelName New log level
 	 */
-	static setLevel(levelName) {
+	static setLevel(this: void, levelName: string) {
 		process.env.UI5_LOG_LVL = levelName;
 	}
 
@@ -65,12 +74,12 @@ class Logger {
 	 * Gets the current log level
 	 *
 	 * @public
-	 * @returns {string} The current log level. Defaults to <code>info</code>
+	 * @returns {LogLevel} The current log level. Defaults to <code>info</code>
 	 */
-	static getLevel() {
+	static getLevel(this: void) {
 		if (process.env.UI5_LOG_LVL) {
 			// Check whether set log level is valid
-			const levelName = process.env.UI5_LOG_LVL;
+			const levelName = process.env.UI5_LOG_LVL as LogLevel;
 			if (!Logger.LOG_LEVELS.includes(levelName)) {
 				throw new Error(
 					`UI5 Logger: Environment variable UI5_LOG_LVL is set to an unknown log level "${levelName}". ` +
@@ -89,7 +98,7 @@ class Logger {
 	 * @param {string} levelName Log level to test
 	 * @returns {boolean} True if the provided level is enabled
 	 */
-	static isLevelEnabled(levelName) {
+	static isLevelEnabled(this: void, levelName: LogLevel) {
 		const currIdx = Logger.LOG_LEVELS.indexOf(Logger.getLevel());
 		const reqIdx = Logger.LOG_LEVELS.indexOf(levelName);
 		if (reqIdx === -1) {
@@ -104,7 +113,7 @@ class Logger {
 	 * @param {any} message Single log message parameter passed by a program
 	 * @returns {string} String representation for the given message
 	 */
-	static _formatMessage(message) {
+	static _formatMessage(this: void, message: unknown) {
 		if (typeof message === "string" || message instanceof String) {
 			return message;
 		}
@@ -123,7 +132,7 @@ class Logger {
 	 * @param {string} moduleName Identifier for messages created by this logger.
 	 * Example: <code>module:submodule:Class</code>
 	 */
-	constructor(moduleName) {
+	constructor(moduleName: string) {
 		if (!moduleName) {
 			throw new Error("Logger: Missing moduleName parameter");
 		}
@@ -140,26 +149,26 @@ class Logger {
 	 * @param {string} levelName Log level to test
 	 * @returns {boolean} True if the provided level is enabled
 	 */
-	isLevelEnabled(levelName) {
+	isLevelEnabled(levelName: LogLevel) {
 		return Logger.isLevelEnabled(levelName);
 	}
 
-	_emit(eventName, payload) {
-		return process.emit(eventName, payload);
+	_emit(eventName: string, payload: LoggerPayload) {
+		return (process.emit as (eventName: string, payload: LoggerPayload) => boolean)(eventName, payload);
 	}
 
-	_log(level, message) {
+	_log(level: LogLevel, message: string) {
 		if (this.isLevelEnabled(level)) {
 			process.stderr.write(`[${level}] ${message}\n`);
 		}
 	}
 
-	_emitOrLog(level, message) {
+	_emitOrLog(level: LogLevel, message: string) {
 		const hasListeners = this._emit(Logger.LOG_EVENT_NAME, {
 			level,
 			message,
 			moduleName: this.#moduleName,
-		});
+		} as LogEvent);
 		if (!hasListeners) {
 			this._log(level, `${this.#moduleName}: ${message}`);
 		}
@@ -231,7 +240,8 @@ Logger.LOG_LEVELS.forEach((logLevel) => {
 		// This level is to suppress any logging. Hence we do not provide a dedicated log-function
 		return;
 	}
-	Logger.prototype[logLevel] = function (...args) {
+	// @ts-expect-error Dynamically defining functions on the prototype
+	Logger.prototype[logLevel] = function (...args: string[]) {
 		const message = args.map(Logger._formatMessage).join(" ");
 		this._emitOrLog(logLevel, message);
 	};

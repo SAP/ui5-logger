@@ -15,7 +15,7 @@ import Logger from "./loggers/Logger.js";
  * Example: <code>module:submodule:Class</code>
  * @returns {@ui5/logger/Logger}
  */
-export function getLogger(moduleName) {
+export function getLogger(moduleName: string) {
 	return new Logger(moduleName);
 }
 

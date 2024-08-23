@@ -1,4 +1,17 @@
-import Logger from "./Logger.js";
+import Logger, {LogLevel, LoggerPayload} from "./Logger.js";
+
+export interface BuildMetadataEvent extends LoggerPayload {
+	projectsToBuild: string[];
+};
+
+export interface BuildStatusEvent extends LoggerPayload {
+	level: LogLevel;
+	message: string;
+	moduleName: string;
+	projectName: string;
+	projectType: string;
+	status: "project-build-start" | "project-build-end" | "project-build-skip";
+};
 
 /**
  * Logger for emitting status events on the progress a UI5 Tooling build process.
@@ -14,12 +27,12 @@ import Logger from "./Logger.js";
  * @alias @ui5/logger/loggers/Build
  */
 class Build extends Logger {
-	#projectsToBuild;
+	#projectsToBuild: string[] | undefined;
 
 	static BUILD_METADATA_EVENT_NAME = "ui5.build-metadata";
 	static BUILD_STATUS_EVENT_NAME = "ui5.build-status";
 
-	setProjects(projects) {
+	setProjects(projects: string[]) {
 		if (!projects || !Array.isArray(projects)) {
 			throw new Error("loggers/Build#setProjects: Missing or incorrect projects parameter");
 		}
@@ -27,10 +40,10 @@ class Build extends Logger {
 
 		this._emit(Build.BUILD_METADATA_EVENT_NAME, {
 			projectsToBuild: projects,
-		});
+		} as BuildMetadataEvent);
 	}
 
-	startProjectBuild(projectName, projectType) {
+	startProjectBuild(projectName: string, projectType: string) {
 		if (!this.#projectsToBuild || !this.#projectsToBuild.includes(projectName)) {
 			throw new Error(`loggers/Build#startProjectBuild: Unknown project ${projectName}`);
 		}
@@ -43,13 +56,13 @@ class Build extends Logger {
 			projectName,
 			projectType,
 			status: "project-build-start",
-		});
+		} as BuildStatusEvent);
 		if (!hasListeners) {
 			this._log(level, `Building ${projectType} project ${projectName}...`);
 		}
 	}
 
-	endProjectBuild(projectName, projectType) {
+	endProjectBuild(projectName: string, projectType: string) {
 		if (!this.#projectsToBuild || !this.#projectsToBuild.includes(projectName)) {
 			throw new Error(`loggers/Build#endProjectBuild: Unknown project ${projectName}`);
 		}
@@ -62,13 +75,13 @@ class Build extends Logger {
 			projectName,
 			projectType,
 			status: "project-build-end",
-		});
+		} as BuildStatusEvent);
 		if (!hasListeners) {
 			this._log(level, `Finished building ${projectType} project ${projectName}`);
 		}
 	}
 
-	skipProjectBuild(projectName, projectType) {
+	skipProjectBuild(projectName: string, projectType: string) {
 		if (!this.#projectsToBuild || !this.#projectsToBuild.includes(projectName)) {
 			throw new Error(`loggers/Build#skipProjectBuild: Unknown project ${projectName}`);
 		}
@@ -81,7 +94,7 @@ class Build extends Logger {
 			projectName,
 			projectType,
 			status: "project-build-skip",
-		});
+		} as BuildStatusEvent);
 		if (!hasListeners) {
 			this._log(level, `Skipping build of ${projectType} project ${projectName}`);
 		}

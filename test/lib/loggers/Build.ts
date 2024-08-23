@@ -1,6 +1,14 @@
-import test from "ava";
+import anyTest, {TestFn} from "ava";
 import sinon from "sinon";
 import BuildLogger from "../../../src/loggers/Build.js";
+
+const test = anyTest as TestFn<{
+	buildLogger: BuildLogger;
+	logStub: sinon.SinonStub;
+	logHandler: sinon.SinonStub;
+	metadataHandler: sinon.SinonStub;
+	statusHandler: sinon.SinonStub;
+}>;
 
 test.serial.beforeEach((t) => {
 	t.context.buildLogger = new BuildLogger("my:module:name");

@@ -1,8 +1,24 @@
 import process from "node:process";
 import {chalkStderr as chalk} from "chalk";
 import figures from "figures";
-import {MultiBar} from "cli-progress";
-import Logger from "../loggers/Logger.js";
+import {MultiBar, SingleBar} from "cli-progress";
+import Logger, {LogLevel, LogEvent} from "../loggers/Logger.js";
+import type {BuildMetadataEvent, BuildStatusEvent} from "../loggers/Build.js";
+import type {ProjectBuildMetadataEvent, ProjectBuildStatusEvent} from "../loggers/ProjectBuild.js";
+
+interface TaskStatus {
+	executionStarted: boolean;
+	executionEnded: boolean;
+	executionStartIndex: number | null;
+}
+
+interface ProjetMetadata {
+	buildStarted: boolean;
+	buildSkipped: boolean;
+	buildEnded: boolean;
+	buildStartIndex: number | null;
+	projectTasks: Map<string, TaskStatus>;
+}
 
 /**
  * Standard handler for events emitted by @ui5/logger modules. Writes messages to
@@ -17,10 +33,17 @@ import Logger from "../loggers/Logger.js";
  * @alias @ui5/logger/writers/Console
  */
 class Console {
-	#projectMetadata = new Map();
-	#progressBarContainer;
-	#progressBar;
-	#progressProjectWeight;
+	#projectMetadata = new Map<string, ProjetMetadata>();
+	#progressBarContainer: MultiBar | undefined | null;
+	#progressBar: SingleBar | undefined | null;
+	#progressProjectWeight: number | undefined;
+
+	private _handleLogEvent: (event: LogEvent) => void;
+	private _handleBuildStatusEvent: (event: BuildStatusEvent) => void;
+	private _handleProjectBuildStatusEvent: (event: ProjectBuildStatusEvent) => void;
+	private _handleBuildMetadataEvent: (event: BuildMetadataEvent) => void;
+	private _handleProjectBuildMetadataEvent: (event: ProjectBuildMetadataEvent) => void;
+	private _handleStop: () => void;
 
 	constructor() {
 		this._handleLogEvent = this.#handleLogEvent.bind(this);
@@ -58,7 +81,7 @@ class Console {
 		process.off("ui5.project-build-status", this._handleProjectBuildStatusEvent);
 		process.off("ui5.log.stop-console", this._handleStop);
 		if (this.#progressBarContainer) {
-			this.#progressBar.stop();
+			this.#progressBar?.stop();
 			this.#progressBarContainer.stop(); // Will fire internal stop event
 		}
 	}
@@ -83,7 +106,7 @@ class Console {
 				format: `{bar} {message}`,
 				barsize: 20,
 				linewrap: true,
-				emptyOnZero: 0,
+				emptyOnZero: true,
 				hideCursor: true,
 
 				// FPS also controls how fast a log message will be rendered above the progress bar
@@ -120,7 +143,7 @@ class Console {
 		return this.#progressBar;
 	}
 
-	#writeMessage(level, message) {
+	#writeMessage(level: LogLevel, message: string) {
 		if (!Logger.isLevelEnabled(level)) {
 			return;
 		}
@@ -136,11 +159,11 @@ class Console {
 		}
 	}
 
-	#handleLogEvent({level, message, moduleName}) {
+	#handleLogEvent({level, message, moduleName}: LogEvent) {
 		this.#writeMessage(level, `${chalk.blue(moduleName)} ${message}`);
 	}
 
-	#handleBuildMetadataEvent({projectsToBuild}) {
+	#handleBuildMetadataEvent({projectsToBuild}: BuildMetadataEvent) {
 		projectsToBuild.forEach((projectName) => {
 			this.#projectMetadata.set(projectName, {
 				buildStarted: false,
@@ -153,7 +176,7 @@ class Console {
 		this.#updateProgressBarTotal();
 	}
 
-	#handleProjectBuildMetadataEvent({tasksToRun, projectName, projectType}) {
+	#handleProjectBuildMetadataEvent({tasksToRun, projectName}: ProjectBuildMetadataEvent) {
 		const projectMetadata = this.#getProjectMetadata(projectName);
 		tasksToRun.forEach((taskName) => {
 			projectMetadata.projectTasks.set(taskName, {
@@ -165,7 +188,7 @@ class Console {
 		this.#updateProgressBarTotal();
 	}
 
-	#getProjectMetadata(projectName) {
+	#getProjectMetadata(projectName: string) {
 		const projectMetadata = this.#projectMetadata.get(projectName);
 		if (!projectMetadata) {
 			throw new Error(`writers/Console: Unknown project ${projectName}`);
@@ -186,7 +209,7 @@ class Console {
 			(this.#progressProjectWeight * this.#projectMetadata.size) + numberOfTasks);
 	}
 
-	#handleBuildStatusEvent({level, projectName, projectType, status}) {
+	#handleBuildStatusEvent({level, projectName, projectType, status}: BuildStatusEvent) {
 		const projectMetadata = this.#getProjectMetadata(projectName);
 		if (projectMetadata.buildStartIndex === null) {
 			let nextIdx = 1;
@@ -198,6 +221,7 @@ class Console {
 			projectMetadata.buildStartIndex = nextIdx;
 		}
 		const buildIndex = `Project ${projectMetadata.buildStartIndex} of ${this.#projectMetadata.size}`;
+		const progressProjectWeight = this.#progressProjectWeight ?? 1;
 
 		let message;
 		switch (status) {
@@ -245,7 +269,7 @@ class Console {
 				`Finished building ${projectType} project ${chalk.bold(projectName)}`;
 
 				// Update progress bar (if used)
-				this._getProgressBar()?.increment(this.#progressProjectWeight);
+				this._getProgressBar()?.increment(progressProjectWeight);
 				break;
 			case "project-build-skip":
 				if (projectMetadata.buildSkipped) {
@@ -268,18 +292,18 @@ class Console {
 
 				// Update progress bar (if used)
 				// All tasks of this projects are completed
-				this._getProgressBar()?.increment(this.#progressProjectWeight + projectMetadata.projectTasks.size);
+				this._getProgressBar()?.increment(progressProjectWeight + projectMetadata.projectTasks.size);
 				break;
 			default:
 				this.#writeMessage("verbose",
-					`writers/Console: Received unknown build-status ${status} for project ${projectName}`);
+					`writers/Console: Received unknown build-status ${status as string} for project ${projectName}`);
 				return;
 		}
 
 		this.#writeMessage(level, `${chalk.grey(buildIndex)}: ${message}`);
 	}
 
-	#handleProjectBuildStatusEvent({level, projectName, projectType, taskName, status}) {
+	#handleProjectBuildStatusEvent({level, projectName, taskName, status}: ProjectBuildStatusEvent) {
 		const {projectTasks} = this.#getProjectMetadata(projectName);
 		const taskMetadata = projectTasks.get(taskName);
 		if (!taskMetadata) {
@@ -332,14 +356,15 @@ class Console {
 				break;
 			default:
 				this.#writeMessage("verbose",
-					`writers/Console: Received unknown project-build-status ${status} for project ${projectName}`);
+					`writers/Console: Received unknown project-build-status ${status as string} ` +
+					`for project ${projectName}`);
 				return;
 		}
 
 		this.#writeMessage(level, `${chalk.blue(`${(projectName)}`)} ${taskIndex}${message}`);
 	}
 
-	#getLevelPrefix(level) {
+	#getLevelPrefix(level: LogLevel) {
 		switch (level) {
 			case "silly":
 				return chalk.inverse(level);
@@ -371,7 +396,7 @@ class Console {
 	}
 
 	static stop() {
-		process.emit("ui5.log.stop-console");
+		(process.emit as (eventName: string) => boolean)("ui5.log.stop-console");
 	}
 }
 

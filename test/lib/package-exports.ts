@@ -25,7 +25,8 @@ test("check number of exports", (t) => {
 	{exportedSpecifier: "internal/loggers/Build", mappedModule: "../../lib/loggers/Build.js"},
 	{exportedSpecifier: "internal/loggers/ProjectBuild", mappedModule: "../../lib/loggers/ProjectBuild.js"},
 ].forEach((v) => {
-	let exportedSpecifier; let mappedModule;
+	let exportedSpecifier;
+	let mappedModule;
 	if (typeof v === "string") {
 		exportedSpecifier = v;
 	} else {

@@ -1,5 +1,19 @@
-import Logger from "./Logger.js";
+import Logger, {LogLevel, LoggerPayload} from "./Logger.js";
 
+export interface ProjectBuildMetadataEvent extends LoggerPayload {
+	projectName: string;
+	projectType: string;
+	tasksToRun: string[];
+};
+
+export interface ProjectBuildStatusEvent extends LoggerPayload {
+	level: LogLevel;
+	moduleName: string;
+	projectName: string;
+	projectType: string;
+	taskName: string;
+	status: "task-start" | "task-end";
+};
 /**
  * Logger for emitting status events on the progress a single project's build process.
  * <br><br>
@@ -17,12 +31,13 @@ import Logger from "./Logger.js";
 class ProjectBuild extends Logger {
 	#projectName;
 	#projectType;
-	#tasksToRun;
+	#tasksToRun: string[] | undefined;
 
 	static PROJECT_BUILD_METADATA_EVENT_NAME = "ui5.project-build-metadata";
 	static PROJECT_BUILD_STATUS_EVENT_NAME = "ui5.project-build-status";
 
-	constructor({moduleName, projectName, projectType}) {
+	constructor({moduleName, projectName, projectType}:
+		{moduleName: string; projectName: string; projectType: string}) {
 		super(moduleName);
 
 		if (!projectName) {
@@ -35,7 +50,7 @@ class ProjectBuild extends Logger {
 		this.#projectType = projectType;
 	}
 
-	setTasks(tasks) {
+	setTasks(tasks: string[]) {
 		if (!tasks || !Array.isArray(tasks)) {
 			throw new Error("loggers/ProjectBuild#setTasks: Missing or incorrect tasks parameter");
 		}
@@ -45,10 +60,10 @@ class ProjectBuild extends Logger {
 			projectName: this.#projectName,
 			projectType: this.#projectType,
 			tasksToRun: tasks,
-		});
+		} as ProjectBuildMetadataEvent);
 	}
 
-	startTask(taskName) {
+	startTask(taskName: string) {
 		if (!this.#tasksToRun || !this.#tasksToRun.includes(taskName)) {
 			throw new Error(`loggers/ProjectBuild#startTask: Unknown task ${taskName}`);
 		}
@@ -59,14 +74,14 @@ class ProjectBuild extends Logger {
 			projectType: this.#projectType,
 			taskName,
 			status: "task-start",
-		});
+		} as ProjectBuildStatusEvent);
 
 		if (!hasListeners) {
 			this._log(level, `${this.#projectName}: Running task ${taskName}...`);
 		}
 	}
 
-	endTask(taskName) {
+	endTask(taskName: string) {
 		if (!this.#tasksToRun || !this.#tasksToRun.includes(taskName)) {
 			throw new Error(`loggers/ProjectBuild#endTask: Unknown task ${taskName}`);
 		}
@@ -77,7 +92,7 @@ class ProjectBuild extends Logger {
 			projectType: this.#projectType,
 			taskName,
 			status: "task-end",
-		});
+		} as ProjectBuildStatusEvent);
 
 		if (!hasListeners) {
 			this._log(level, `${this.#projectName}: Finished task ${taskName}`);
