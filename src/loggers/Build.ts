@@ -26,7 +26,7 @@ class Build extends Logger {
 		this.#projectsToBuild = projects;
 
 		this._emit(Build.BUILD_METADATA_EVENT_NAME, {
-			projectsToBuild: projects
+			projectsToBuild: projects,
 		});
 	}
 

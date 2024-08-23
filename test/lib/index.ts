@@ -1,6 +1,6 @@
 import test from "ava";
-import {getLogger, isLogLevelEnabled, setLogLevel, getLogLevel} from "../../lib/index.js";
-import Logger from "../../lib/loggers/Logger.js";
+import {getLogger, isLogLevelEnabled, setLogLevel, getLogLevel} from "../../src/index.js";
+import Logger from "../../src/loggers/Logger.js";
 
 test.serial.afterEach.always((t) => {
 	delete process.env.UI5_LOG_LVL;

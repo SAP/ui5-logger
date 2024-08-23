@@ -44,7 +44,7 @@ class ProjectBuild extends Logger {
 		this._emit(ProjectBuild.PROJECT_BUILD_METADATA_EVENT_NAME, {
 			projectName: this.#projectName,
 			projectType: this.#projectType,
-			tasksToRun: tasks
+			tasksToRun: tasks,
 		});
 	}
 

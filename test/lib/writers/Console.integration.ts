@@ -2,10 +2,10 @@ import test from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
 import figures from "figures";
-import ConsoleWriter from "../../../lib/writers/Console.js";
-import Logger from "../../../lib/loggers/Logger.js";
-import BuildLogger from "../../../lib/loggers/Build.js";
-import ProjectBuildLogger from "../../../lib/loggers/ProjectBuild.js";
+import ConsoleWriter from "../../../src/writers/Console.js";
+import Logger from "../../../src/loggers/Logger.js";
+import BuildLogger from "../../../src/loggers/Build.js";
+import ProjectBuildLogger from "../../../src/loggers/ProjectBuild.js";
 
 test.serial.beforeEach((t) => {
 	t.context.consoleWriter = ConsoleWriter.init();
@@ -35,7 +35,7 @@ async function findMessageInProgressBarLog(t, indicator) {
 	const call = allWriteCalls.find((call) => {
 		return call.firstArg.includes(indicator);
 	});
-	return call && call.firstArg;
+	return call?.firstArg;
 }
 
 test.serial("Log standard messages", (t) => {
@@ -129,7 +129,7 @@ test.serial("Log ProjectBuild messages", (t) => {
 	const myLogger = new ProjectBuildLogger({
 		moduleName: "project:build",
 		projectName: "project.name",
-		projectType: "project-type"
+		projectType: "project-type",
 	});
 
 	ProjectBuildLogger.LOG_LEVELS.forEach((level) => {
@@ -159,7 +159,7 @@ test.serial("Log ProjectBuild status", (t) => {
 	const myLogger = new ProjectBuildLogger({
 		moduleName: "build:module",
 		projectName: "project.a",
-		projectType: "project-type"
+		projectType: "project-type",
 	});
 
 	myLogger.setTasks(["task.a", "task.b"]);
@@ -193,7 +193,7 @@ test.serial("ProjectBuild status restricted by log level", (t) => {
 	const myLogger = new ProjectBuildLogger({
 		moduleName: "build:module",
 		projectName: "project.a",
-		projectType: "project-type"
+		projectType: "project-type",
 	});
 
 	process.env.UI5_LOG_LVL = "silent";
