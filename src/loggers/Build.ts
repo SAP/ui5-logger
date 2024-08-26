@@ -22,9 +22,6 @@ export interface BuildStatusEvent extends LoggerPayload {
  * <br><br>
  * If no listener is attached to the the event, messages are written directly to the <code>process.stderr</code> stream.
  *
- * @private
- * @class
- * @alias @ui5/logger/loggers/Build
  */
 class Build extends Logger {
 	#projectsToBuild: string[] | undefined;

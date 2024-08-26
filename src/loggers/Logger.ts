@@ -13,6 +13,10 @@ export interface LogEvent extends LoggerPayload {
 	moduleName: string;
 };
 
+type LogLevelMethods = {
+	[level in LogLevel]: (...args: unknown[]) => void;
+};
+
 /**
  * Standard logging module for UI5 Tooling and extensions.
  * <br><br>
@@ -22,11 +26,8 @@ export interface LogEvent extends LoggerPayload {
  * <br><br>
  * If no listener is attached to an event, messages are written directly to the <code>process.stderr</code> stream.
  *
- * @public
- * @class
- * @alias @ui5/logger/Logger
  */
-class Logger {
+class Logger implements LogLevelMethods {
 	/**
 	 * Available log levels, ordered by priority:
 	 * <br>
@@ -42,19 +43,13 @@ class Logger {
 	 *
 	 * Log level <code>silent</code> is special in the sense that no messages can be submitted with that level.
 	 * It can be used to suppress all logging.
-	 *
-	 * @member {string[]}
-	 * @public
-	*/
+	 */
 	static LOG_LEVELS = ["silly", "verbose", "perf", "info", "warn", "error", "silent"] as const;
 
 	/**
 	 * Event name used for emitting new log-message event on the
 	 * [<code>process</code>]{@link https://nodejs.org/api/process.html} object
-	 *
-	 * @member {string}
-	 * @public
-	*/
+	 */
 	static LOG_EVENT_NAME = "ui5.log";
 
 	/**
@@ -63,8 +58,7 @@ class Logger {
 	 * <b>Example:</b> Setting it to <code>perf</code> would suppress all <code>silly</code> and <code>verbose</code>
 	 * logging, and only show <code>perf</code>, <code>info</code>, <code>warn</code> and <code>error</code> logs.
 	 *
-	 * @public
-	 * @param {string} levelName New log level
+	 * @param levelName New log level
 	 */
 	static setLevel(this: void, levelName: string) {
 		process.env.UI5_LOG_LVL = levelName;
@@ -73,8 +67,7 @@ class Logger {
 	/**
 	 * Gets the current log level
 	 *
-	 * @public
-	 * @returns {LogLevel} The current log level. Defaults to <code>info</code>
+	 * @returns The current log level. Defaults to <code>info</code>
 	 */
 	static getLevel(this: void) {
 		if (process.env.UI5_LOG_LVL) {
@@ -94,9 +87,8 @@ class Logger {
 	/**
 	 * Tests whether the provided log level is enabled by the current log level
 	 *
-	 * @public
-	 * @param {string} levelName Log level to test
-	 * @returns {boolean} True if the provided level is enabled
+	 * @param levelName Log level to test
+	 * @returns True if the provided level is enabled
 	 */
 	static isLevelEnabled(this: void, levelName: LogLevel) {
 		const currIdx = Logger.LOG_LEVELS.indexOf(Logger.getLevel());
@@ -110,8 +102,8 @@ class Logger {
 	/**
 	 * Formats a given parameter into a string
 	 *
-	 * @param {any} message Single log message parameter passed by a program
-	 * @returns {string} String representation for the given message
+	 * @param message Single log message parameter passed by a program
+	 * @returns String representation for the given message
 	 */
 	static _formatMessage(this: void, message: unknown) {
 		if (typeof message === "string" || message instanceof String) {
@@ -128,8 +120,7 @@ class Logger {
 	/**
 	 *
 	 *
-	 * @public
-	 * @param {string} moduleName Identifier for messages created by this logger.
+	 * @param moduleName Identifier for messages created by this logger.
 	 * Example: <code>module:submodule:Class</code>
 	 */
 	constructor(moduleName: string) {
@@ -145,9 +136,8 @@ class Logger {
 	/**
 	 * Tests whether the provided log level is enabled by the current log level
 	 *
-	 * @public
-	 * @param {string} levelName Log level to test
-	 * @returns {boolean} True if the provided level is enabled
+	 * @param levelName Log level to test
+	 * @returns True if the provided level is enabled
 	 */
 	isLevelEnabled(levelName: LogLevel) {
 		return Logger.isLevelEnabled(levelName);
@@ -173,78 +163,77 @@ class Logger {
 			this._log(level, `${this.#moduleName}: ${message}`);
 		}
 	}
-}
 
-/**
- * Create a log entry with the <code>silly</code> level
- *
- * @public
- * @name @ui5/logger/Logger#silly
- * @function
- * @memberof @ui5/logger/Logger
- * @param {...any} message Messages to log. An automatic string conversion is applied if necessary
- */
+	/**
+	 * Create a log entry with the <code>silly</code> level
+	 *
+	 * @param args Messages to log. An automatic string conversion is applied if necessary
+	 */
+	silly(...args: unknown[]) {
+		const message = args.map(Logger._formatMessage).join(" ");
+		this._emitOrLog("silly", message);
+	};
 
-/**
- * Create a log entry with the <code>verbose</code> level
- *
- * @public
- * @name @ui5/logger/Logger#verbose
- * @function
- * @memberof @ui5/logger/Logger
- * @param {...any} message Messages to log. An automatic string conversion is applied if necessary
- */
+	/**
+	 * Create a log entry with the <code>verbose</code> level
+	 *
+	 * @param args Messages to log. An automatic string conversion is applied if necessary
+	 */
+	verbose(...args: unknown[]) {
+		const message = args.map(Logger._formatMessage).join(" ");
+		this._emitOrLog("verbose", message);
+	};
 
-/**
- * Create a log entry with the <code>perf</code> level
- *
- * @public
- * @name @ui5/logger/Logger#perf
- * @function
- * @memberof @ui5/logger/Logger
- * @param {...any} message Messages to log. An automatic string conversion is applied if necessary
- */
+	/**
+	 * Create a log entry with the <code>perf</code> level
+	 *
+	 * @param args Messages to log. An automatic string conversion is applied if necessary
+	 */
+	perf(...args: unknown[]) {
+		const message = args.map(Logger._formatMessage).join(" ");
+		this._emitOrLog("perf", message);
+	};
 
-/**
- * Create a log entry with the <code>info</code> level
- *
- * @public
- * @name @ui5/logger/Logger#info
- * @function
- * @memberof @ui5/logger/Logger
- * @param {...any} message Messages to log. An automatic string conversion is applied if necessary
- */
+	/**
+	 * Create a log entry with the <code>info</code> level
+	 *
+	 * @param args Messages to log. An automatic string conversion is applied if necessary
+	 */
+	info(...args: unknown[]) {
+		const message = args.map(Logger._formatMessage).join(" ");
+		this._emitOrLog("info", message);
+	};
 
-/**
- * Create a log entry with the <code>warn</code> level
- *
- * @public
- * @name @ui5/logger/Logger#warn
- * @function
- * @memberof @ui5/logger/Logger
- * @param {...any} message Messages to log. An automatic string conversion is applied if necessary
- */
+	/**
+	 * Create a log entry with the <code>warn</code> level
+	 *
+	 * @param args Messages to log. An automatic string conversion is applied if necessary
+	 */
+	warn(...args: unknown[]) {
+		const message = args.map(Logger._formatMessage).join(" ");
+		this._emitOrLog("warn", message);
+	};
 
-/**
- * Create a log entry with the <code>error</code> level
- *
- * @public
- * @name @ui5/logger/Logger#error
- * @function
- * @memberof @ui5/logger/Logger
- * @param {...any} message Messages to log. An automatic string conversion is applied if necessary
- */
+	/**
+	 * Create a log entry with the <code>error</code> level
+	 *
+	 * @param args Messages to log. An automatic string conversion is applied if necessary
+	 */
+	error(...args: unknown[]) {
+		const message = args.map(Logger._formatMessage).join(" ");
+		this._emitOrLog("error", message);
+	};
 
-Logger.LOG_LEVELS.forEach((logLevel) => {
-	if (logLevel === "silent") {
+	/**
+	 * Create a log entry with the <code>silent</code> level. These messages will not be shown.
+	 *
+	 * @param args Messages to log. An automatic string conversion is applied if necessary
+	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	silent(...args: unknown[]) {
 		// This level is to suppress any logging. Hence we do not provide a dedicated log-function
 		return;
-	}
-	// @ts-expect-error Dynamically defining functions on the prototype
-	Logger.prototype[logLevel] = function (...args: string[]) {
-		const message = args.map(Logger._formatMessage).join(" ");
-		this._emitOrLog(logLevel, message);
 	};
-});
+}
 
 export default Logger;

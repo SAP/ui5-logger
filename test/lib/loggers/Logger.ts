@@ -1,6 +1,11 @@
-import test from "ava";
+import anyTest, {TestFn} from "ava";
 import sinon from "sinon";
-import Logger from "../../../src/loggers/Logger.js";
+import Logger, {LogLevel} from "../../../src/loggers/Logger.js";
+
+const test = anyTest as TestFn<{
+	stderrWriteStub: sinon.SinonStub;
+	logHandler: sinon.SinonStub;
+}>;
 
 test.serial.beforeEach((t) => {
 	t.context.logHandler = sinon.stub();
@@ -47,7 +52,7 @@ test.serial("isLevelEnabled", (t) => {
 	t.true(Logger.isLevelEnabled("silent"));
 
 	t.throws(() => {
-		Logger.isLevelEnabled("all");
+		Logger.isLevelEnabled("all" as LogLevel);
 	}, {message: `Unknown log level "all"`});
 
 	process.env.UI5_LOG_LVL = "unknown level";
@@ -62,7 +67,7 @@ test.serial("Correct log event name", (t) => {
 });
 
 test.serial("Setting all log levels via API", (t) => {
-	const levels = ["silly", "verbose", "perf", "info", "warn", "error", "silent"];
+	const levels = ["silly", "verbose", "perf", "info", "warn", "error", "silent"] as LogLevel[];
 
 	for (const level of levels) {
 		Logger.setLevel(level);
@@ -72,7 +77,7 @@ test.serial("Setting all log levels via API", (t) => {
 });
 
 test.serial("Setting all log levels via environment variable)", (t) => {
-	const levels = ["silly", "verbose", "perf", "info", "warn", "error", "silent"];
+	const levels = ["silly", "verbose", "perf", "info", "warn", "error", "silent"] as LogLevel[];
 
 	for (const level of levels) {
 		process.env.UI5_LOG_LVL = level;
@@ -82,6 +87,7 @@ test.serial("Setting all log levels via environment variable)", (t) => {
 
 test.serial("Missing parameter: module name", (t) => {
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		new Logger();
 	}, {
 		message: "Logger: Missing moduleName parameter",
@@ -89,7 +95,7 @@ test.serial("Missing parameter: module name", (t) => {
 });
 
 test.serial("Legal module names", (t) => {
-	function testNotThrows(moduleName) {
+	function testNotThrows(moduleName: string) {
 		t.notThrows(() => {
 			new Logger(moduleName);
 		}, "Did not throw");
@@ -101,7 +107,7 @@ test.serial("Legal module names", (t) => {
 });
 
 test.serial("Illegal module names", (t) => {
-	function testThrows(moduleName) {
+	function testThrows(moduleName: string) {
 		t.throws(() => {
 			new Logger(moduleName);
 		}, {
@@ -126,6 +132,7 @@ test.serial("Log messages", (t) => {
 			// Can't log silent messages
 			return;
 		}
+		// @ts-expect-error Testing invalid parameter
 		myLogger[level]("Message 1");
 		t.is(logHandler.callCount, 1, "Emitted and captured one log event");
 		t.deepEqual(logHandler.getCall(0).args[0], {
@@ -170,6 +177,11 @@ test.serial("Log other non-strings", (t) => {
 	const {logHandler} = t.context;
 	const myLogger = new Logger("my:module:name");
 
+	/**
+	 *
+	 * @param value
+	 * @param expectdMessage
+	 */
 	function compareLog(value, expectdMessage) {
 		myLogger.info(value);
 		t.is(logHandler.callCount, 1, "Emitted and captured one log event");

@@ -1,4 +1,4 @@
-import test from "ava";
+import anyTest, {ExecutionContext, TestFn} from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
 import figures from "figures";
@@ -6,6 +6,12 @@ import ConsoleWriter from "../../../src/writers/Console.js";
 import Logger from "../../../src/loggers/Logger.js";
 import BuildLogger from "../../../src/loggers/Build.js";
 import ProjectBuildLogger from "../../../src/loggers/ProjectBuild.js";
+
+const test = anyTest as TestFn<{
+	consoleWriter: ConsoleWriter;
+	stderrWriteStub: sinon.SinonStub;
+	originalIsTty: boolean;
+}>;
 
 test.serial.beforeEach((t) => {
 	t.context.consoleWriter = ConsoleWriter.init();
@@ -21,7 +27,8 @@ test.serial.afterEach.always((t) => {
 	delete process.env.UI5_LOG_LVL;
 });
 
-async function findMessageInProgressBarLog(t, indicator) {
+async function findMessageInProgressBarLog(
+	t: ExecutionContext<{stderrWriteStub: sinon.SinonStub}>, indicator: string) {
 	const {stderrWriteStub} = t.context;
 
 	await new Promise((resolve) => {

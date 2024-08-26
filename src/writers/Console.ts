@@ -28,9 +28,6 @@ interface ProjetMetadata {
  * The progress bar is only used in interactive terminals. If verbose logging is enabled, the progress
  * bar is disabled.
  *
- * @public
- * @class
- * @alias @ui5/logger/writers/Console
  */
 class Console {
 	#projectMetadata = new Map<string, ProjetMetadata>();
@@ -57,7 +54,6 @@ class Console {
 	/**
 	 * Attaches all event listeners and starts writing to output stream
 	 *
-	 * @public
 	 */
 	enable() {
 		process.on("ui5.log", this._handleLogEvent);
@@ -71,7 +67,6 @@ class Console {
 	/**
 	 * Detaches all event listeners and stops writing to output stream
 	 *
-	 * @public
 	 */
 	disable() {
 		process.off("ui5.log", this._handleLogEvent);
@@ -387,7 +382,6 @@ class Console {
 	/**
 	 * Creates a new instance and subscribes it to all events
 	 *
-	 * @public
 	 */
 	static init() {
 		const cH = new Console();
