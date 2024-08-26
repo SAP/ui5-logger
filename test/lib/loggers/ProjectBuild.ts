@@ -1,6 +1,14 @@
-import test from "ava";
+import anyTest, {TestFn} from "ava";
 import sinon from "sinon";
 import ProjectBuildLogger from "../../../src/loggers/ProjectBuild.js";
+
+const test = anyTest as TestFn<{
+	projectBuildLogger: ProjectBuildLogger;
+	logStub: sinon.SinonStub;
+	logHandler: sinon.SinonStub;
+	metadataHandler: sinon.SinonStub;
+	statusHandler: sinon.SinonStub;
+}>;
 
 test.serial.beforeEach((t) => {
 	t.context.projectBuildLogger = new ProjectBuildLogger({
@@ -39,12 +47,14 @@ test.serial("Correct build status event name", (t) => {
 
 test.serial("Missing parameters", (t) => {
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		new ProjectBuildLogger({});
 	}, {
 		message: "Logger: Missing moduleName parameter",
 	}, "Threw with expected error message");
 
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		new ProjectBuildLogger({
 			moduleName: "module:name",
 			projectName: "projectName",
@@ -54,6 +64,7 @@ test.serial("Missing parameters", (t) => {
 	}, "Threw with expected error message");
 
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		new ProjectBuildLogger({
 			moduleName: "module:name",
 			projectType: "projectType",
@@ -178,12 +189,14 @@ test.serial("Set tasks: Missing parameter", (t) => {
 	const {projectBuildLogger} = t.context;
 
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		projectBuildLogger.setTasks();
 	}, {
 		message: `loggers/ProjectBuild#setTasks: Missing or incorrect tasks parameter`,
 	}, "Threw with expected error message");
 
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		projectBuildLogger.setTasks(new Set("no array"));
 	}, {
 		message: `loggers/ProjectBuild#setTasks: Missing or incorrect tasks parameter`,

@@ -135,7 +135,7 @@ class Console {
 				this.#progressBar = null;
 			});
 		}
-		return this.#progressBar;
+		return this.#progressBar!;
 	}
 
 	#writeMessage(level: LogLevel, message: string) {

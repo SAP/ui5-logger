@@ -195,12 +195,14 @@ test.serial("Set projects: Missing parameter", (t) => {
 	const {buildLogger} = t.context;
 
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		buildLogger.setProjects();
 	}, {
 		message: `loggers/Build#setProjects: Missing or incorrect projects parameter`,
 	}, "Threw with expected error message");
 
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		buildLogger.setProjects(new Set("no array"));
 	}, {
 		message: `loggers/Build#setProjects: Missing or incorrect projects parameter`,
@@ -269,6 +271,7 @@ test.serial("Start project build: Missing projectType parameter", (t) => {
 
 	buildLogger.setProjects(["project.a"]);
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		buildLogger.startProjectBuild("project.a");
 	}, {
 		message: `loggers/Build#startProjectBuild: Missing projectType parameter`,
@@ -280,6 +283,7 @@ test.serial("End project build: Missing projectType parameter", (t) => {
 
 	buildLogger.setProjects(["project.a"]);
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		buildLogger.endProjectBuild("project.a");
 	}, {
 		message: `loggers/Build#endProjectBuild: Missing projectType parameter`,
@@ -291,6 +295,7 @@ test.serial("Skip project build: Missing projectType parameter", (t) => {
 
 	buildLogger.setProjects(["project.a"]);
 	t.throws(() => {
+		// @ts-expect-error Testing invalid parameter
 		buildLogger.skipProjectBuild("project.a");
 	}, {
 		message: `loggers/Build#skipProjectBuild: Missing projectType parameter`,

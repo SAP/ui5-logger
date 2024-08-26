@@ -129,10 +129,10 @@ test.serial("Log messages", (t) => {
 
 	Logger.LOG_LEVELS.forEach((level) => {
 		if (level === "silent") {
-			// Can't log silent messages
+			myLogger[level]("Silent Message");
+			// Silent messages won't be emitted, so nothing more to check
 			return;
 		}
-		// @ts-expect-error Testing invalid parameter
 		myLogger[level]("Message 1");
 		t.is(logHandler.callCount, 1, "Emitted and captured one log event");
 		t.deepEqual(logHandler.getCall(0).args[0], {
@@ -177,12 +177,7 @@ test.serial("Log other non-strings", (t) => {
 	const {logHandler} = t.context;
 	const myLogger = new Logger("my:module:name");
 
-	/**
-	 *
-	 * @param value
-	 * @param expectdMessage
-	 */
-	function compareLog(value, expectdMessage) {
+	function compareLog(value: unknown, expectdMessage: string) {
 		myLogger.info(value);
 		t.is(logHandler.callCount, 1, "Emitted and captured one log event");
 		t.deepEqual(logHandler.getCall(0).args[0], {

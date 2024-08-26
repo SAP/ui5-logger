@@ -54,13 +54,14 @@ test.serial("Log standard messages", (t) => {
 			// Can't log silent messages
 			return;
 		}
+		let expectedLevel = level as string;
 		myLogger[level]("Message 1");
 		if (level === "verbose") {
 			// "verbose" is abbreviated
-			level = "verb";
+			expectedLevel = "verb";
 		}
 		t.is(stderrWriteStub.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${level} my:module Message 1\n`,
+		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${expectedLevel} my:module Message 1\n`,
 			"Logged expected message");
 		stderrWriteStub.resetHistory();
 	});
@@ -85,13 +86,14 @@ test.serial("Log Build messages", (t) => {
 			// Can't log silent messages
 			return;
 		}
+		let expectedLevel = level as string;
 		myLogger[level]("Message 1");
 		if (level === "verbose") {
 			// "verbose" is abbreviated
-			level = "verb";
+			expectedLevel = "verb";
 		}
 		t.is(stderrWriteStub.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${level} Builder Message 1\n`,
+		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${expectedLevel} Builder Message 1\n`,
 			"Logged expected message");
 		stderrWriteStub.resetHistory();
 	});
@@ -144,13 +146,14 @@ test.serial("Log ProjectBuild messages", (t) => {
 			// Can't log silent messages
 			return;
 		}
+		let expectedLevel = level as string;
 		myLogger[level]("Message 1");
 		if (level === "verbose") {
 			// "verbose" is abbreviated
-			level = "verb";
+			expectedLevel = "verb";
 		}
 		t.is(stderrWriteStub.callCount, 1, "Logged one message");
-		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${level} project:build Message 1\n`,
+		t.is(stripAnsi(stderrWriteStub.getCall(0).args[0]), `${expectedLevel} project:build Message 1\n`,
 			"Logged expected message");
 		stderrWriteStub.resetHistory();
 	});
@@ -266,7 +269,7 @@ test.serial("Return to direct logging once progress bar stopped", async (t) => {
 	process.stderr.isTTY = true;
 
 	buildLogger.setProjects(["project.a", "project.b"]);
-	const pb = consoleWriter._getProgressBar();
+	const pb = consoleWriter._getProgressBar()!;
 
 	t.true(pb.isActive, "Progress bar is active");
 
@@ -314,7 +317,7 @@ test.serial("Progress bar progress", (t) => {
 	// Force TTY in test env to enable progress bar
 	process.stderr.isTTY = true;
 
-	const pb = consoleWriter._getProgressBar();
+	const pb = consoleWriter._getProgressBar()!;
 	buildLogger.setProjects(["project.a", "project.b"]);
 	t.is(pb.getTotal(), 4, "Correct progress total after setting projects");
 	t.is(pb.getProgress(), 0, "No progress after setting projects to build");

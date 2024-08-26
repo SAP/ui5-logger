@@ -1,8 +1,14 @@
-import test from "ava";
+import anyTest, {TestFn} from "ava";
 import sinon from "sinon";
 import stripAnsi from "strip-ansi";
 import figures from "figures";
 import ConsoleWriter from "../../../src/writers/Console.js";
+
+const test = anyTest as TestFn<{
+	consoleWriter: ConsoleWriter;
+	stderrWriteStub: sinon.SinonStub;
+	originalIsTty: boolean;
+}>;
 
 test.serial.beforeEach((t) => {
 	t.context.consoleWriter = ConsoleWriter.init();
@@ -18,10 +24,14 @@ test.serial.afterEach.always((t) => {
 	delete process.env.UI5_LOG_LVL;
 });
 
+function emit(eventName: string, payload: object) {
+	return (process.emit as (eventName: string, payload: object) => boolean)(eventName, payload);
+}
+
 test.serial("Log event", (t) => {
 	const {stderrWriteStub} = t.context;
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
@@ -39,7 +49,7 @@ test.serial("Enable", (t) => {
 	t.context.consoleWriter.disable();
 	const consoleWriter = t.context.consoleWriter = new ConsoleWriter();
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
@@ -49,7 +59,7 @@ test.serial("Enable", (t) => {
 
 	consoleWriter.enable();
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
 		moduleName: "my:module",
@@ -62,7 +72,7 @@ test.serial("Disable", (t) => {
 	const {consoleWriter, stderrWriteStub} = t.context;
 	consoleWriter.disable();
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
@@ -75,7 +85,7 @@ test.serial("Disable + Enable", (t) => {
 	const {consoleWriter, stderrWriteStub} = t.context;
 	consoleWriter.disable();
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
@@ -84,7 +94,7 @@ test.serial("Disable + Enable", (t) => {
 	t.is(stderrWriteStub.callCount, 0, "Logged no message");
 
 	consoleWriter.enable();
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
 		moduleName: "my:module",
@@ -100,7 +110,7 @@ test.serial("Stop", (t) => {
 	const {stderrWriteStub} = t.context;
 
 	ConsoleWriter.stop();
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
@@ -115,7 +125,7 @@ test.serial("Stop disables all instances", (t) => {
 	ConsoleWriter.init();
 	ConsoleWriter.init();
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
@@ -126,7 +136,7 @@ test.serial("Stop disables all instances", (t) => {
 
 	ConsoleWriter.stop();
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
 		moduleName: "my:module",
@@ -138,7 +148,7 @@ test.serial("Stop disables all instances", (t) => {
 test.serial("Logging restricted by log level setting", (t) => {
 	const {stderrWriteStub} = t.context;
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "verbose",
 		message: "Message 1",
 		moduleName: "my:module",
@@ -151,7 +161,7 @@ test.serial("Logging with unknown log level", (t) => {
 	const {stderrWriteStub} = t.context;
 
 	t.throws(() => {
-		process.emit("ui5.log", {
+		emit("ui5.log", {
 			level: "foo",
 			message: "Message 1",
 			moduleName: "my:module",
@@ -165,18 +175,18 @@ test.serial("Logging with unknown log level", (t) => {
 
 test.serial("Build status events", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "verbose", // Should not get logged
 		projectName: "project.a",
 		projectType: "project-type",
 		status: "project-build-start",
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "info",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -193,7 +203,7 @@ test.serial("Build status: Unknown project", (t) => {
 	const {stderrWriteStub} = t.context;
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -208,11 +218,11 @@ test.serial("Build status: Unknown project", (t) => {
 
 test.serial("Build status (start): Duplicate project build start", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -220,7 +230,7 @@ test.serial("Build status (start): Duplicate project build start", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -235,18 +245,18 @@ test.serial("Build status (start): Duplicate project build start", (t) => {
 
 test.serial("Build status (start): Project build already ended", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
 		status: "project-build-start",
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -254,7 +264,7 @@ test.serial("Build status (start): Project build already ended", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -270,11 +280,11 @@ test.serial("Build status (start): Project build already ended", (t) => {
 
 test.serial("Build status (start): Project build already skipped", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -282,7 +292,7 @@ test.serial("Build status (start): Project build already skipped", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -299,18 +309,18 @@ test.serial("Build status (start): Project build already skipped", (t) => {
 
 test.serial("Build status (end): Duplicate project build end", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
 		status: "project-build-start",
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -318,7 +328,7 @@ test.serial("Build status (end): Duplicate project build end", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -333,12 +343,12 @@ test.serial("Build status (end): Duplicate project build end", (t) => {
 
 test.serial("Build status (end): Project build not started", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -355,11 +365,11 @@ test.serial("Build status (end): Project build not started", (t) => {
 
 test.serial("Build status (end): Project build already skipped", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -367,7 +377,7 @@ test.serial("Build status (end): Project build already skipped", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -384,11 +394,11 @@ test.serial("Build status (end): Project build already skipped", (t) => {
 
 test.serial("Build status (skip): Duplicate project build skip", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -396,7 +406,7 @@ test.serial("Build status (skip): Duplicate project build skip", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -411,11 +421,11 @@ test.serial("Build status (skip): Duplicate project build skip", (t) => {
 
 test.serial("Build status (skip): Project build already started", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -423,7 +433,7 @@ test.serial("Build status (skip): Project build already started", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -440,18 +450,18 @@ test.serial("Build status (skip): Project build already started", (t) => {
 
 test.serial("Build status (skip): Project build already ended", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
 		status: "project-build-start",
 	});
 
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -459,7 +469,7 @@ test.serial("Build status (skip): Project build already ended", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.build-status", {
+		emit("ui5.build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -476,12 +486,12 @@ test.serial("Build status (skip): Project build already ended", (t) => {
 
 test.serial("Build status: Unknown status", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
 	process.env.UI5_LOG_LVL = "verbose";
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "info",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -496,17 +506,17 @@ test.serial("Build status: Unknown status", (t) => {
 
 test.serial("ProjectBuild status events", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.project-build-metadata", {
+	emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
 		tasksToRun: ["task.a"],
 	});
 
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "verbose", // Should not get logged
 		projectName: "project.a",
 		projectType: "project-type",
@@ -514,7 +524,7 @@ test.serial("ProjectBuild status events", (t) => {
 		status: "task-start",
 	});
 
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "info",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -532,7 +542,7 @@ test.serial("ProjectBuild status: Unknown project", (t) => {
 	const {stderrWriteStub} = t.context;
 
 	t.throws(() => {
-		process.emit("ui5.project-build-status", {
+		emit("ui5.project-build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -548,12 +558,12 @@ test.serial("ProjectBuild status: Unknown project", (t) => {
 
 test.serial("ProjectBuild status: Unknown task", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
 	t.throws(() => {
-		process.emit("ui5.project-build-status", {
+		emit("ui5.project-build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -569,17 +579,17 @@ test.serial("ProjectBuild status: Unknown task", (t) => {
 
 test.serial("ProjectBuild status (start): Duplicate task execution start", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.project-build-metadata", {
+	emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
 		tasksToRun: ["task.a"],
 	});
 
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -588,7 +598,7 @@ test.serial("ProjectBuild status (start): Duplicate task execution start", (t) =
 	});
 
 	t.throws(() => {
-		process.emit("ui5.project-build-status", {
+		emit("ui5.project-build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -605,17 +615,17 @@ test.serial("ProjectBuild status (start): Duplicate task execution start", (t) =
 
 test.serial("ProjectBuild status (start): Task execution already ended", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.project-build-metadata", {
+	emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
 		tasksToRun: ["task.a"],
 	});
 
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -623,7 +633,7 @@ test.serial("ProjectBuild status (start): Task execution already ended", (t) => 
 		status: "task-start",
 	});
 
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -632,7 +642,7 @@ test.serial("ProjectBuild status (start): Task execution already ended", (t) => 
 	});
 
 	t.throws(() => {
-		process.emit("ui5.project-build-status", {
+		emit("ui5.project-build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -650,17 +660,17 @@ test.serial("ProjectBuild status (start): Task execution already ended", (t) => 
 
 test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.project-build-metadata", {
+	emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
 		tasksToRun: ["task.a"],
 	});
 
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -668,7 +678,7 @@ test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 		status: "task-start",
 	});
 
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "silly",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -677,7 +687,7 @@ test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 	});
 
 	t.throws(() => {
-		process.emit("ui5.project-build-status", {
+		emit("ui5.project-build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -694,18 +704,18 @@ test.serial("ProjectBuild status (end): Duplicate task execution end", (t) => {
 
 test.serial("ProjectBuild status (end): Task execution not started", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.project-build-metadata", {
+	emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
 		tasksToRun: ["task.a"],
 	});
 
 	t.throws(() => {
-		process.emit("ui5.project-build-status", {
+		emit("ui5.project-build-status", {
 			level: "info",
 			projectName: "project.a",
 			projectType: "project-type",
@@ -723,18 +733,18 @@ test.serial("ProjectBuild status (end): Task execution not started", (t) => {
 
 test.serial("ProjectBuild status: Unknown status", (t) => {
 	const {stderrWriteStub} = t.context;
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	process.emit("ui5.project-build-metadata", {
+	emit("ui5.project-build-metadata", {
 		projectName: "project.a",
 		projectType: "project-type",
 		tasksToRun: ["task.a"],
 	});
 
 	process.env.UI5_LOG_LVL = "verbose";
-	process.emit("ui5.project-build-status", {
+	emit("ui5.project-build-status", {
 		level: "info",
 		projectName: "project.a",
 		projectType: "project-type",
@@ -771,29 +781,29 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 	// Force TTY in test env to enable progress bar
 	process.stderr.isTTY = true;
 
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	const pb = consoleWriter._getProgressBar();
+	const pb = consoleWriter._getProgressBar()!;
 
 	t.true(pb.isActive, "Progress bar is active");
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
 	});
 
 	// Complete all progress
-	process.emit("ui5.build-status", {
+	emit("ui5.build-status", {
 		level: "info",
 		projectName: "project.a",
 		projectType: "project-type",
 		status: "project-build-skip",
 	});
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 2",
 		moduleName: "my:module",
@@ -806,7 +816,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 		setTimeout(resolve, 10);
 	});
 
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 3",
 		moduleName: "my:module",
@@ -819,7 +829,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 		return call.firstArg.includes("Message 1");
 	});
 	t.truthy(firstMessage, "Logged first message");
-	t.is(stripAnsi(firstMessage.firstArg),
+	t.is(stripAnsi(firstMessage!.firstArg),
 		`info my:module Message 1\n`,
 		"Logged expected first message");
 
@@ -827,7 +837,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 		return call.firstArg.includes("Message 2");
 	});
 	t.truthy(secondMessage, "Logged second message");
-	t.is(stripAnsi(secondMessage.firstArg),
+	t.is(stripAnsi(secondMessage!.firstArg),
 		`info my:module Message 2\n`,
 		"Logged expected second message");
 
@@ -835,7 +845,7 @@ test.serial("Progress bar completion does not drop any logs", async (t) => {
 		return call.firstArg.includes("Message 3");
 	});
 	t.truthy(thirdMessage, "Logged third message");
-	t.is(stripAnsi(thirdMessage.firstArg),
+	t.is(stripAnsi(thirdMessage!.firstArg),
 		`info my:module Message 3\n`,
 		"Logged expected third message");
 });
@@ -846,11 +856,11 @@ test.serial("Disable: Stops progress bar", (t) => {
 	// Force TTY in test env to enable progress bar
 	process.stderr.isTTY = true;
 
-	process.emit("ui5.build-metadata", {
+	emit("ui5.build-metadata", {
 		projectsToBuild: ["project.a"],
 	});
 
-	const pb = consoleWriter._getProgressBar();
+	const pb = consoleWriter._getProgressBar()!;
 
 	t.true(pb.isActive, "Progress bar is active");
 
@@ -861,7 +871,7 @@ test.serial("Disable: Stops progress bar", (t) => {
 
 	// Re-enable and log a message
 	consoleWriter.enable();
-	process.emit("ui5.log", {
+	emit("ui5.log", {
 		level: "info",
 		message: "Message 1",
 		moduleName: "my:module",
