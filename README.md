@@ -25,10 +25,10 @@ General UI5 CLI documentation can be found here: [ui5.github.io/cli](https://ui5
 The UI5 Logger API Reference can be found here: [`@ui5/logger`](https://ui5.github.io/cli/v3/api/module-@ui5_logger.html)
 
 ## Contributing
-Please check our [Contribution Guidelines](https://github.com/UI5/cli/blob/main/CONTRIBUTING.md).
+Please check our [Contribution Guidelines](https://github.com/UI5/cli/blob/v4/CONTRIBUTING.md).
 
 ## Support
-Please follow our [Contribution Guidelines](https://github.com/UI5/cli/blob/main/CONTRIBUTING.md#report-an-issue) on how to report an issue.
+Please follow our [Contribution Guidelines](https://github.com/UI5/cli/blob/v4/CONTRIBUTING.md#report-an-issue) on how to report an issue.
 
 Please report issues in the main [UI5 CLI](https://github.com/UI5/cli) repository.
 
