@@ -10,6 +10,8 @@
 [![npm Package Version](https://badge.fury.io/js/%40ui5%2Flogger.svg)](https://www.npmjs.com/package/@ui5/logger)
 [![Coverage Status](https://coveralls.io/repos/github/SAP/ui5-logger/badge.svg)](https://coveralls.io/github/SAP/ui5-logger)
 
+> ⚠️ UI5 CLI v3 has been deprecated! We highly recommend migrating to [**the latest version**](https://ui5.github.io/cli/stable/).
+
 ## Documentation
 General UI5 CLI documentation can be found here: [ui5.github.io/cli](https://ui5.github.io/cli/)
 
